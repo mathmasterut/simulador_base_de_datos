@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Educativo: Simuladores de Arquitectura de Bases de Datos</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --panel-bg: #ffffff;
+            --text: #2b2d42;
+            --success: #2ec4b6;
+            --danger: #e71d36;
+            --attribute-bg: #f8f9fa;
+            
+            /* Colores específicos por simulador */
+            --bib-primary: #4a90e2;   --bib-secondary: #9b59b6; --bib-actor: #e67e22; --bib-pivot: #34495e;
+            --med-primary: #00b4d8;   --med-secondary: #7209b7; --med-actor: #f77f00; --med-pivot: #34495e;
+            --acad-primary: #2a9d8f;  --acad-secondary: #e9c46a; --acad-actor: #f4a261; --acad-pivot: #264653;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- ESTILOS DEL DASHBOARD PRINCIPAL --- */
+        header {
+            background-color: #1e293b;
+            padding: 5px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+            border-bottom: 2px solid #334155;
+        }
+
+        .dashboard-title {
+            color: #f8fafc;
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-button {
+            background-color: #334155;
+            color: #94a3b8;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            background-color: #475569;
+            color: #f1f5f9;
+        }
+
+        .tab-button.active {
+            background-color: var(--bg-color);
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            border-bottom: none;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+        }
+
+        .simulador-content {
+            display: none;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .simulador-content.active {
+            display: flex;
+        }
+
+        /* --- BOTÓN Y CUADRO DE ANÁLISIS DE INGENIERÍA --- */
+        .btn-analisis {
+            width: 100%;
+            background-color: #475569;
+            color: white;
+            border: none;
+            padding: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .btn-analisis:hover { background-color: #334155; }
+
+        .box-analisis {
+            display: none;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid #4a90e2;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            line-height: 1.4;
+            color: #334155;
+            margin-bottom: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        /* --- ESTILOS COMUNES DE LOS SIMULADORES --- */
+        .sim-header {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            z-index: 15;
+        }
+
+        .btn-verificar {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-verificar:hover { background-color: #23a89b; }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            padding-bottom: 30px;
+        }
+
+        .toolbox {
+            width: 310px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid #e1e4e8;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 5;
+            overflow-y: auto;
+        }
+
+        .section-title { font-size: 0.8rem; font-weight: bold; margin: 4px 0 2px 0; color: #555; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 2px; }
+        .instruction { font-size: 0.7rem; color: #6c757d; line-height: 1.3; margin-bottom: 4px; }
+
+        .entidad-source {
+            color: white;
+            padding: 7px;
+            border-radius: 5px;
+            cursor: grab;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            user-select: none;
+            font-size: 0.8rem;
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .attribute-source {
+            background-color: var(--attribute-bg);
+            border: 1px dashed #cbd5e1;
+            color: #475569;
+            padding: 4px;
+            font-size: 0.68rem;
+            border-radius: 4px;
+            cursor: grab;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            user-select: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background-size: 20px 20px;
+            background-image: linear-gradient(to right, #e9ecef 1px, transparent 1px),
+                              linear-gradient(to bottom, #e9ecef 1px, transparent 1px);
+        }
+
+        .line-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .entidad-dropped {
+            position: absolute;
+            background: white;
+            border: 2px solid var(--text);
+            border-radius: 6px;
+            width: 160px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 3;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 5px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.8rem;
+            cursor: move;
+        }
+
+        .table-body {
+            padding: 5px;
+            min-height: 35px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .attr-dropped-slot {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 4px;
+            font-size: 0.68rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: left;
+        }
+
+        .connector {
+            width: 11px;
+            height: 11px;
+            background: var(--text);
+            border-radius: 50%;
+            margin: 3px auto;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .connector:hover { background: var(--success); transform: scale(1.2); }
+
+        .correct { border-color: var(--success) !important; box-shadow: 0 0 10px rgba(46, 196, 182, 0.5); }
+        .incorrect { border-color: var(--danger) !important; box-shadow: 0 0 10px rgba(231, 29, 54, 0.5); }
+
+        .panel-retos {
+            position: absolute;
+            bottom: 45px;
+            left: 330px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px;
+            width: 320px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 8;
+        }
+        .reto-select {
+            width: 100%;
+            padding: 5px;
+            font-size: 0.78rem;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        .reto-descripcion {
+            font-size: 0.72rem;
+            line-height: 1.3;
+            color: #334155;
+            background: #f8fafc;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #1e293b;
+            color: #94a3b8;
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 8px 0;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border-top: 1px solid #334155;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="dashboard-title">🎛️ Dashboard de Simulación DER Profesional</div>
+        <div class="tabs-container">
+            <button class="tab-button active" onclick="switchTab('sim-biblioteca', this)">1. Control de Biblioteca</button>
+            <button class="tab-button" onclick="switchTab('sim-medico', this)">2. Agenda Médica</button>
+            <button class="tab-button" onclick="switchTab('sim-academico', this)">3. Proyectos Escolares</button>
+        </div>
+    </header>
+
+    <div id="sim-biblioteca" class="simulador-content active">
+        <div class="sim-header">
+            <button class="btn-verificar" onclick="verificarBiblioteca()">Validar Arquitectura</button>
+        </div>
+        <div class="app-container">
+            <div class="toolbox">
+                <button class="btn-analisis" onclick="toggleAnalisis('analisis-bib')">📘 Ver Análisis de Ingeniería</button>
+                <div id="analisis-bib" class="box-analisis" style="border-left-color: var(--bib-primary);">
+                    <strong>Reglas de Negocio:</strong><br>
+                    • Relación N:M entre Libro y Autor rota con tabla intermedia.<br>
+                    • Separación estricta de Editorial (1:N).<br>
+                    • Préstamos apuntan a copias físicas tangibles, no a obras abstractas.<br>
+                    <strong>Solución de Diseño:</strong><br>
+                    • Mapeo obligatorio de 'Libro_Autor' con llaves compuestas.<br>
+                    • Uso de 'id_ejemp(FK)' en Préstamo para control de pérdidas físicas.
+                </div>
+
+                <div class="section-title">1. Entidades del Sistema</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Usuario" style="background-color: var(--bib-actor);">Usuario</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Bibliotecario" style="background-color: var(--bib-actor);">Bibliotecario</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Autor" style="background-color: var(--bib-secondary);">Autor</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Editorial" style="background-color: var(--bib-secondary);">Editorial</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Libro" style="background-color: var(--bib-secondary);">Libro</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Libro_Autor" style="background-color: var(--bib-pivot);">Libro_Autor</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Ejemplar" style="background-color: var(--bib-primary);">Ejemplar</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Préstamo" style="background-color: var(--bib-primary);">Préstamo</div>
+                
+                <div class="section-title">2. Atributos Requeridos</div>
+                <div class="attributes-grid">
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_usuario">id_user (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_empleado">id_emp (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_autor">id_autor (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_editorial">id_edit (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="isbn">isbn (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ejemplar">id_ejemp (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prestamo">id_prest (PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="isbn_fk">isbn (FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_autor_fk">id_autor (FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_edit_fk">id_edit (FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ejemp_fk">id_ejemp (FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_user_fk">id_user (FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nombre">nombre</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="correo">correo</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tipo_usuario">tipo_usuario</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_control">num_control</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_autor">nom_autor</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_editorial">nom_edit</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="titulo">titulo</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_ejemplar">num_ejemplar</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="estatus_fisico">estatus_fis</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_prestamo">f_prestamo</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_devolucion">f_devolucion</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="penalizacion">penalizacion</div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvas-bib">
+                <canvas id="line-canvas-bib" class="line-canvas"></canvas>
+                <div class="panel-retos">
+                    <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #475569;">🎯 Casos de Uso Interactivos</div>
+                    <select class="reto-select" onchange="cambiarRetoBib(this.value)">
+                        <option value="0">Selecciona un reto de negocio...</option>
+                        <option value="1">Caso 1: El Docente sin Número de Control</option>
+                        <option value="2">Caso 2: El libro 'Cien años de soledad' coescrito</option>
+                        <option value="3">Caso 3: ¿Qué copia física exacta se prestó?</option>
+                        <option value="4">Caso 4: Evitar el desastre de Llaves en Préstamo</option>
+                    </select>
+                    <div id="desc-reto-bib" class="reto-descripcion">Selecciona un escenario para auditar mentalmente si tu diseño de datos soportará los problemas del mundo real.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sim-medico" class="simulador-content">
+        <div class="sim-header">
+            <button class="btn-verificar" onclick="verificarMedico()">Validar Arquitectura</button>
+        </div>
+        <div class="app-container">
+            <div class="toolbox">
+                <button class="btn-analisis" onclick="toggleAnalisis('analisis-med')">📘 Ver Análisis de Ingeniería</button>
+                <div id="analisis-med" class="box-analisis" style="border-left-color: var(--med-primary);">
+                    <strong>Reglas de Negocio:</strong><br>
+                    • Los médicos tienen múltiples especialidades atendidas (N:M).<br>
+                    • Urgencias (Walk-ins) deben auditarse sin cita agendada previamente.<br>
+                    • Cancelaciones y reagendaciones mutan el estatus sin destruir tu historial.<br>
+                    <strong>Solución de Diseño:</strong><br>
+                    • Construcción obligatoria de 'Medico_Especialidad'.<br>
+                    • Inclusión de 'estatus_cita' y 'fecha_registro' versus 'fecha_cita'.
+                </div>
+
+                <div class="section-title">1. Entidades del Sistema</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Paciente" style="background-color: var(--med-actor);">Paciente</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Medico" style="background-color: var(--med-actor);">Médico</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Recepcionista" style="background-color: var(--med-actor);">Recepcionista</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Especialidad" style="background-color: var(--med-secondary);">Especialidad</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Metodo_Pago" style="background-color: var(--med-secondary);">Método de Pago</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Medico_Especialidad" style="background-color: var(--med-pivot);">Medico_Especialidad</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Consultorio" style="background-color: var(--med-primary);">Consultorio</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Cita" style="background-color: var(--med-primary);">Cita Médica</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Pago" style="background-color: var(--med-primary);">Pago Transacción</div>
+                
+                <div class="section-title">2. Atributos Requeridos</div>
+                <div class="attributes-grid">
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_paciente">id_pac(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_medico">id_med(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_recep">id_rec(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_especialidad">id_esp(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_consultorio">id_cons(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cita">id_cita(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_pago">id_pago(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_metodo">id_met(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_medico_fk">id_med(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_especialidad_fk">id_esp(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_paciente_fk">id_pac(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_recep_fk">id_rec(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_consultorio_fk">id_cons(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cita_fk">id_cita(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_metodo_fk">id_met(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_paciente">nom_paciente</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nss">num_seguro_soc</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_medico">nom_medico</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_especialidad">nom_especialidad</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_consultorio">num_sala</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_cita">fecha_hora_cita</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_registro">fecha_registro</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="estatus_cita">estatus_cita</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="monto">monto_total</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="descr_pago">descr_metodo</div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvas-med">
+                <canvas id="line-canvas-med" class="line-canvas"></canvas>
+                <div class="panel-retos">
+                    <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #475569;">🏥 Escenarios Clínicos Reales</div>
+                    <select class="reto-select" onchange="cambiarRetoMed(this.value)">
+                        <option value="0">Selecciona un reto de negocio médico...</option>
+                        <option value="1">Caso 1: El Médico con múltiples especialidades</option>
+                        <option value="2">Caso 2: Paciente que llega de urgencia (Sin cita previa)</option>
+                        <option value="3">Caso 3: Paciente que paga con Aseguradora u Tarjeta</option>
+                        <option value="4">Caso 4: Paciente que cancela o cambia su cita de día</option>
+                    </select>
+                    <div id="desc-reto-med" class="reto-descripcion">Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una clínica profesional.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sim-academico" class="simulador-content">
+        <div class="sim-header">
+            <button class="btn-verificar" onclick="verificarAcad()">Validar Arquitectura</button>
+        </div>
+        <div class="app-container">
+            <div class="toolbox">
+                <button class="btn-analisis" onclick="toggleAnalisis('analisis-acad')">📘 Ver Análisis de Ingeniería</button>
+                <div id="analisis-acad" class="box-analisis" style="border-left-color: var(--acad-primary);">
+                    <strong>Reglas de Negocio:</strong><br>
+                    • Coasesorías de profesores (N:M) y equipos multifuncionales de alumnos (N:M).<br>
+                    • Delegación individualizada de tareas específicas dentro de un proyecto común.<br>
+                    • Estatus compartidos e historial ágil mediante entregables técnicos.<br>
+                    <strong>Solución de Diseño:</strong><br>
+                    • Tablas cruzadas: 'Proyecto_Docente' y 'Proyecto_Alumno' (con rol 'es_lider').<br>
+                    • Relación 'Tarea' a 'Evidencia' para segregar URLs extensas de repositorios.
+                </div>
+
+                <div class="section-title">1. Entidades del Sistema</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Profesor" style="background-color: var(--acad-actor);">Profesor</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Alumno" style="background-color: var(--acad-actor);">Alumno</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Estatus" style="background-color: var(--acad-secondary); color: var(--text);">Estatus</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto" style="background-color: var(--acad-primary);">Proyecto</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Tarea" style="background-color: var(--acad-primary);">Tarea</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Evidencia" style="background-color: var(--acad-primary);">Evidencia</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto_Docente" style="background-color: var(--acad-pivot);">Proyecto_Docente</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto_Alumno" style="background-color: var(--acad-pivot);">Proyecto_Alumno</div>
+                
+                <div class="section-title">2. Atributos Requeridos</div>
+                <div class="attributes-grid">
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_profesor">id_prof(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_alumno">id_alum(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_estatus">id_est(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_proyecto">id_proy(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_tarea">id_tarea(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_evidencia">id_evid(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_proy_fk">id_proy(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prof_fk">id_prof(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_alum_fk">id_alum(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_est_fk">id_est(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_tarea_fk">id_tarea(FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_prof">nom_profesor</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_alum">nom_alumno</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_control">num_control</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tit_proy">titulo_proy</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_est">nom_estatus</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="descr_tarea">desc_tarea</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="es_lider">es_lider</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="url_evidencia">url_github_pdf</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_entrega">fecha_entrega</div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvas-acad">
+                <canvas id="line-canvas-acad" class="line-canvas"></canvas>
+                <div class="panel-retos">
+                    <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #475569;">🚀 Desafíos de Gestión Escolar</div>
+                    <select class="reto-select" onchange="cambiarRetoAcad(this.value)">
+                        <option value="0">Selecciona una problemática escolar...</option>
+                        <option value="1">Caso 1: El Proyecto coasesorado por dos profesores</option>
+                        <option value="2">Caso 2: Saber quién es el líder de la célula de desarrollo</option>
+                        <option value="3">Caso 3: Asignar una tarea pesada a un estudiante específico</option>
+                        <option value="4">Caso 4: Almacenar el link de GitHub sin saturar la tarea</option>
+                    </select>
+                    <div id="desc-reto-acad" class="reto-descripcion">Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una célula ágil escolar.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Material de uso didáctico de la materia de Base de Datos, prohibido su uso comercial.
+    </footer>
+
+    <script>
+        let currentSimulador = 'sim-biblioteca';
+        let activeConnections = { 'sim-biblioteca': [], 'sim-medico': [], 'sim-academico': [] };
+        let selectedNode = null;
+        let droppedCount = 0;
+
+        // --- SISTEMA DE NAVEGACIÓN DE PESTAÑAS (DASHBOARD) ---
+        function switchTab(simId, btnElement) {
+            document.querySelectorAll('.simulador-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(simId).classList.add('active');
+            btnElement.classList.add('active');
+            currentSimulador = simId;
+            selectedNode = null;
+            resizeAllCanvases();
+        }
+
+        function toggleAnalisis(boxId) {
+            const box = document.getElementById(boxId);
+            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // --- TEXTOS DIDÁCTICOS DE RETOS DE NEGOCIO ---
+        const retosBib = {
+            "0": "Selecciona un escenario para auditar mentalmente si tu diseño de datos soportará los problemas del mundo real.",
+            "1": "<strong>Escenario:</strong> Un docente o administrativo quiere pedir un libro. Ellos no tienen número de control de alumno.<br><strong>Pista:</strong> Tu tabla 'Usuario' debe tener 'tipo_usuario', 'nombre' y 'correo' para no quedar bloqueada si falta el número de control.",
+            "2": "<strong>Escenario:</strong> Un libro de medicina científica fue escrito por 4 doctores diferentes.<br><strong>Pista:</strong> Si conectas Autor directamente con Libro, romperás el sistema. Necesitas mapear la tabla intermedia 'Libro_Autor' con sus dos FK.",
+            "3": "<strong>Escenario:</strong> La biblioteca tiene 5 libros físicos idénticos de 'Cálculo de Larson'. Uno se lo llevaron a casa y regresó roto.<br><strong>Pista:</strong> La tabla 'Préstamo' no debe apuntar a la obra abstracta (ISBN), sino al identificador exacto de la copia física: 'id_ejemp (FK)'.",
+            "4": "<strong>Escenario:</strong> Un alumno genera un préstamo y vinculas la transacción usando su número de control suelto.<br><strong>Pista:</strong> ¡Peligro de integridad! Las llaves foráneas deben apuntar obligatoriamente a la llave primaria de la tabla origen ('id_user (FK)')."
+        };
+
+        const retosMed = {
+            "0": "Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una clínica profesional.",
+            "1": "<strong>Escenario:</strong> El Dr. García atiende Medicina General, pero también concluyó la especialidad de Cardiología.<br><strong>Pista:</strong> No metas la especialidad en el médico. Requieres la tabla intermedia 'Medico_Especialidad' para ligar sus FKs.",
+            "2": "<strong>Escenario:</strong> Un paciente llega herido y debe ser atendido de inmediato sin cita reservada semanas antes.<br><strong>Pista:</strong> La tabla 'Cita' debe tener un 'estatus_cita' (Atendido/En espera) y 'fecha_registro' para auditar que se abrió al momento.",
+            "3": "<strong>Escenario:</strong> La consulta cuesta $800. Un cliente paga en efectivo y otro con Seguro de Gastos Médicos Mayores.<br><strong>Pista:</strong> Para no repetir texto en la tabla Pagos, usa un catálogo 'Metodo_Pago' ligado al 'Pago' mediante 'id_met (FK)'.",
+            "4": "<strong>Escenario:</strong> Inés tiene cita el martes, pero llama para moverla al viernes por motivos de trabajo.<br><strong>Pista:</strong> Nunca borres registros. Cambia el 'estatus_cita' a 'Cancelada/Reagendada' y registra la nueva fecha en una fila limpia."
+        };
+
+        const retosAcad = {
+            "0": "Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una célula ágil escolar.",
+            "1": "<strong>Escenario:</strong> El proyecto 'Simulador WEB' tiene como asesor técnico al MTI. Torres y asesora metodológica a la Dra. Ramos.<br><strong>Pista:</strong> Relacionar Profesor directo con Proyecto limita a un solo asesor. Necesitas la tabla pivote 'Proyecto_Docente'.",
+            "2": "<strong>Escenario:</strong> El equipo está formado por 3 alumnos, pero el director de carrera necesita saber quién es el responsable de dar la cara por el proyecto.<br><strong>Pista:</strong> Agrega el atributo 'es_lider' dentro de la tabla intermedia 'Proyecto_Alumno' para marcar al responsable sin alterar la entidad original.",
+            "3": "<strong>Escenario:</strong> El proyecto tiene la tarea 'Diseñar base de datos en MySQL'. Necesitamos registrar que esa tarea le toca a Juan y no a todo el equipo.<br><strong>Pista:</strong> La tabla 'Tarea' debe estar vinculada al proyecto general mediante 'id_proy(FK)', pero tiene que recibir a un 'id_alum(FK)' individual.",
+            "4": "<strong>Escenario:</strong> Para calificar el sprint, el profesor exige ver el enlace del repositorio de GitHub o el archivo PDF subido.<br><strong>Pista:</strong> No amontones cadenas largas de texto en la tarea. Crea la entidad 'Evidencia Entregable' apuntando hacia la tarea origen mediante 'id_tarea(FK)'."
+        };
+
+        function cambiarRetoBib(v) { document.getElementById('desc-reto-bib').innerHTML = retosBib[v]; }
+        function cambiarRetoMed(v) { document.getElementById('desc-reto-med').innerHTML = retosMed[v]; }
+        function cambiarRetoAcad(v) { document.getElementById('desc-reto-acad').innerHTML = retosAcad[v]; }
+
+        // --- MANEJO DE LIENZOS GRÁFICOS DINÁMICOS ---
+        function resizeAllCanvases() {
+            ['sim-biblioteca', 'sim-medico', 'sim-academico'].forEach(id => {
+                const container = document.querySelector(`#${id} .canvas-container`);
+                const canvas = document.querySelector(`#${id} .line-canvas`);
+                if(container && canvas) {
+                    canvas.width = container.clientWidth;
+                    canvas.height = container.clientHeight;
+                }
+            });
+            redibujaLineas();
+        }
+        window.addEventListener('resize', resizeAllCanvases);
+        setTimeout(resizeAllCanvases, 200);
+
+        // --- SISTEMA COMPARTIDO DRAG AND DROP ---
+        document.querySelectorAll('.entidad-source, .attribute-source').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('kind', e.target.dataset.kind);
+                if(e.target.dataset.kind === 'entidad') {
+                    e.dataTransfer.setData('type', e.target.dataset.type);
+                    e.dataTransfer.setData('style', e.target.getAttribute('style') || '');
+                } else {
+                    e.dataTransfer.setData('name', e.target.dataset.name);
+                    e.dataTransfer.setData('label', e.target.innerText);
+                }
+            });
+        });
+
+        document.querySelectorAll('.canvas-container').forEach(cont => {
+            cont.addEventListener('dragover', e => e.preventDefault());
+            cont.addEventListener('drop', e => {
+                e.preventDefault();
+                const kind = e.dataTransfer.getData('kind');
+                if (kind !== 'entidad') return;
+
+                const type = e.dataTransfer.getData('type');
+                const inheritStyle = e.dataTransfer.getData('style');
+                const rect = cont.getBoundingClientRect();
+                const x = e.clientX - rect.left - 80; 
+                const y = e.clientY - rect.top - 25;
+
+                crearEntidadTabla(type, x, y, cont.id, inheritStyle);
+            });
+        });
+
+        function crearEntidadTabla(type, x, y, containerId, inheritStyle) {
+            droppedCount++;
+            const id = `table-${type}-${droppedCount}`;
+            const div = document.createElement('div');
+            div.className = 'entidad-dropped';
+            div.id = id;
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
+            div.dataset.type = type;
+
+            // Extraer color de fondo heredado para pintar la cabecera
+            let headerBg = '#34495e';
+            if(inheritStyle && inheritStyle.includes('background-color:')) {
+                headerBg = inheritStyle.split('background-color:')[1].split(';')[0].trim();
+            }
+
+            div.innerHTML = `
+                <div class="table-header" style="background-color: ${headerBg}">${type}</div>
+                <div class="table-body" id="body-${id}"></div>
+                <div class="connector" onclick="event.stopPropagation(); manejarConexion('${id}')"></div>
+            `;
+
+            document.getElementById(containerId).appendChild(div);
+            makeElementDraggable(div);
+
+            const bodySlot = document.getElementById(`body-${id}`);
+            bodySlot.addEventListener('dragover', e => e.preventDefault());
+            bodySlot.addEventListener('drop', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.dataTransfer.getData('kind') !== 'atributo') return;
+
+                const name = e.dataTransfer.getData('name');
+                const label = e.dataTransfer.getData('label');
+
+                if (!bodySlot.querySelector(`[data-attr="${name}"]`)) {
+                    const attrDiv = document.createElement('div');
+                    attrDiv.className = 'attr-dropped-slot';
+                    attrDiv.dataset.attr = name;
+                    attrDiv.innerText = label;
+                    bodySlot.appendChild(attrDiv);
+                }
+            });
+            redibujaLineas();
+        }
+
+        function makeElementDraggable(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            elmnt.querySelector('.table-header').onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                redibujaLineas();
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        function manejarConexion(entidadId) {
+            if (selectedNode === null) {
+                selectedNode = entidadId;
+                document.getElementById(entidadId).style.boxShadow = "0 0 15px #f39c12";
+            } else {
+                if (selectedNode !== entidadId) {
+                    const pool = activeConnections[currentSimulador];
+                    const yaExiste = pool.some(c => (c.from === selectedNode && c.to === entidadId) || (c.from === entidadId && c.to === selectedNode));
+                    if (!yaExiste) {
+                        pool.push({ from: selectedNode, to: entidadId });
+                        redibujaLineas();
+                    }
+                }
+                const oldNode = document.getElementById(selectedNode);
+                if(oldNode) oldNode.style.boxShadow = "0 4px 10px rgba(0,0,0,0.15)";
+                selectedNode = null;
+            }
+        }
+
+        function redibujaLineas() {
+            ['sim-biblioteca', 'sim-medico', 'sim-academico'].forEach(simId => {
+                const canvas = document.querySelector(`#${simId} .line-canvas`);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = "#2b2d42";
+                ctx.lineWidth = 2.5;
+
+                activeConnections[simId].forEach(conn => {
+                    const elFrom = document.getElementById(conn.from);
+                    const elTo = document.getElementById(conn.to);
+                    if (elFrom && elTo) {
+                        const x1 = elFrom.offsetLeft + (elFrom.offsetWidth / 2);
+                        const y1 = elFrom.offsetTop + elFrom.offsetHeight - 8;
+                        const x2 = elTo.offsetLeft + (elTo.offsetWidth / 2);
+                        const y2 = elTo.offsetTop + (elTo.offsetHeight / 2);
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                    }
+                });
+            });
+        }
+
+        // --- MAPEADORES COMUNES AUXILIARES PARA AUDITORÍA ---
+        function getAtributosYConexiones(simId) {
+            let conexiones = [];
+            activeConnections[simId].forEach(conn => {
+                const t1 = document.getElementById(conn.from).dataset.type;
+                const t2 = document.getElementById(conn.to).dataset.type;
+                conexiones.push({ t1, t2 });
+            });
+            let atributos = {};
+            document.querySelectorAll(`#${simId} .entidad-dropped`).forEach(tabla => {
+                const tipo = tabla.dataset.type;
+                if (!atributos[tipo]) atributos[tipo] = [];
+                tabla.querySelectorAll('.attr-dropped-slot').forEach(slot => {
+                    atributos[tipo].push(slot.dataset.attr);
+                });
+            });
+            return { conexiones, atributos };
+        }
+
+        // --- VALIDACIÓN MOTORES REQUERIDOS ---
+        function verificarBiblioteca() {
+            document.querySelectorAll('#sim-biblioteca .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
+            const { conexiones, atributos } = getAtributosYConexiones('sim-biblioteca');
+            const estanConectados = (a, b) => conexiones.some(c => (c.t1 === a && c.t2 === b) || (c.t1 === b && c.t2 === a));
+            const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
+            let obs = [];
+
+            if (!estanConectados('Autor', 'Libro_Autor') || !estanConectados('Libro', 'Libro_Autor')) obs.push("Error N:M: Autor y Libro requieren acoplarse mediante 'Libro_Autor'.");
+            if (!estanConectados('Editorial', 'Libro')) obs.push("Falta relación: La 'Editorial' debe conectarse a 'Libro'.");
+            if (!estanConectados('Libro', 'Ejemplar')) obs.push("Falta relación: El 'Libro' se asocia a sus 'Ejemplares' físicos.");
+            if (!estanConectados('Ejemplar', 'Préstamo')) obs.push("Falta relación: Conecta 'Ejemplar' con 'Préstamo' para registrar la salida del tomo exacto.");
+            if (!estanConectados('Usuario', 'Préstamo')) obs.push("Falta relación: 'Usuario' debe estar conectado a 'Préstamo'.");
+            if (!estanConectados('Bibliotecario', 'Préstamo')) obs.push("Falta relación: 'Bibliotecario' audita el 'Préstamo'.");
+
+            if (atributos['Usuario'] && (!tieneAtributo('Usuario', 'id_usuario') || !tieneAtributo('Usuario', 'nombre'))) obs.push("Usuario: Falta su PK id_user y campos descriptivos.");
+            if (atributos['Libro_Autor'] && (!tieneAtributo('Libro_Autor', 'isbn_fk') || !tieneAtributo('Libro_Autor', 'id_autor_fk'))) obs.push("Libro_Autor: Requiere llaves foráneas compuestas.");
+            if (atributos['Libro'] && !tieneAtributo('Libro', 'id_edit_fk')) obs.push("Libro: Requiere hospedar la foránea 'id_edit(FK)'.");
+            if (atributos['Ejemplar'] && !tieneAtributo('Ejemplar', 'isbn_fk')) obs.push("Ejemplar: Copia física requiere saber su 'isbn(FK)' estructural.");
+            if (atributos['Préstamo']) {
+                if (!tieneAtributo('Préstamo', 'id_ejemp_fk')) obs.push("Préstamo: Debe almacenar 'id_ejemp (FK)' para auditar la copia física exacta.");
+                if (tieneAtributo('Préstamo', 'num_control')) obs.push("Error de Normalización en Préstamo: Quita 'num_control' (genera redundancia).");
+                if (!tieneAtributo('Préstamo', 'id_user_fk')) obs.push("Error de Integridad en Préstamo: Requiere 'id_user (FK)' obligatorio.");
+            }
+
+            lanzarResultado('sim-biblioteca', obs, "🎉 ¡Espectacular! El Modelo de la Biblioteca cumple con las Reglas de Normalización 3NF.");
+        }
+
+        function verificarMedico() {
+            document.querySelectorAll('#sim-medico .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
+            const { conexiones, atributos } = getAtributosYConexiones('sim-medico');
+            const estanConectados = (a, b) => conexiones.some(c => (c.t1 === a && c.t2 === b) || (c.t1 === b && c.t2 === a));
+            const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
+            let obs = [];
+
+            if (!estanConectados('Medico', 'Medico_Especialidad') || !estanConectados('Especialidad', 'Medico_Especialidad')) obs.push("Error N:M: 'Médico' y 'Especialidad' deben acoplarse con la intermedia 'Medico_Especialidad'.");
+            if (!estanConectados('Paciente', 'Cita')) obs.push("Falta relación: Toda 'Cita' debe ligar a un 'Paciente'.");
+            if (!estanConectados('Medico', 'Cita')) obs.push("Falta relación: La 'Cita' se agenda con un 'Médico'.");
+            if (!estanConectados('Consultorio', 'Cita')) obs.push("Falta relación: La 'Cita' reserva un 'Consultorio'.");
+            if (!estanConectados('Cita', 'Pago')) obs.push("Falta relación: El 'Pago' financiero nace de una 'Cita'.");
+            if (!estanConectados('Metodo_Pago', 'Pago')) obs.push("Falta relación: El catálogo de 'Método de Pago' debe alimentar la transacción.");
+
+            if (atributos['Medico_Especialidad'] && (!tieneAtributo('Medico_Especialidad', 'id_medico_fk') || !tieneAtributo('Medico_Especialidad', 'id_especialidad_fk'))) obs.push("Medico_Especialidad: Debe contener sus dos FKs estructurales.");
+            if (atributos['Cita']) {
+                if (!tieneAtributo('Cita', 'id_paciente_fk') || !tieneAtributo('Cita', 'id_medico_fk') || !tieneAtributo('Cita', 'id_consultorio_fk')) obs.push("Cita Médica Incompleta: Debe hospedar las FKs de Paciente, Médico y Consultorio.");
+                if (!tieneAtributo('Cita', 'fecha_cita') || !tieneAtributo('Cita', 'estatus_cita')) obs.push("Cita Médica: Falta mapear 'fecha_hora_cita' y 'estatus_cita' para control operativo.");
+            }
+            if (atributos['Pago'] && (!tieneAtributo('Pago', 'id_cita_fk') || !tieneAtributo('Pago', 'id_metodo_fk'))) obs.push("Pago: Requiere enlazar la 'id_cita(FK)' e 'id_met(FK)' del catálogo financiero.");
+
+            lanzarResultado('sim-medico', obs, "🎉 ¡Impecable! El Diagrama Relacional de la Clínica Médica es totalmente correcto y robusto.");
+        }
+
+        function verificarAcad() {
+            document.querySelectorAll('#sim-academico .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
+            const { conexiones, atributos } = getAtributosYConexiones('sim-academico');
+            const estanConectados = (a, b) => conexiones.some(c => (c.t1 === a && c.t2 === b) || (c.t1 === b && c.t2 === a));
+            const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
+            let obs = [];
+
+            if (!estanConectados('Profesor', 'Proyecto_Docente') || !estanConectados('Proyecto', 'Proyecto_Docente')) obs.push("Error N:M Docentes: 'Profesor' y 'Proyecto' requieren acoplarse con la intermedia 'Proyecto_Docente'.");
+            if (!estanConectados('Alumno', 'Proyecto_Alumno') || !estanConectados('Proyecto', 'Proyecto_Alumno')) obs.push("Error N:M Alumnos: 'Alumnos' y 'Proyecto' requieren unirse con 'Proyecto_Alumno'.");
+            if (!estanConectados('Estatus', 'Proyecto') || !estanConectados('Estatus', 'Tarea')) obs.push("Falta relación: El catálogo de 'Estatus' debe alimentar de forma unificada a 'Proyecto' y 'Tarea'.");
+            if (!estanConectados('Proyecto', 'Tarea')) obs.push("Falta relación: Las 'Tareas' funcionales deben colgar de un 'Proyecto'.");
+            if (!estanConectados('Alumno', 'Tarea')) obs.push("Falta relación: Liga 'Alumno' con 'Tarea' para definir al estudiante responsable individual.");
+            if (!estanConectados('Tarea', 'Evidencia')) obs.push("Falta relación: El entregable ('Evidencia') nace de una 'Tarea' completada.");
+
+            if (atributos['Proyecto_Alumno'] && !tieneAtributo('Proyecto_Alumno', 'es_lider')) obs.push("Célula Incompleta: Agrega el rol 'es_lider' en Proyecto_Alumno para saber quién comanda el equipo.");
+            if (atributos['Tarea'] && (!tieneAtributo('Tarea', 'id_proy_fk') || !tieneAtributo('Tarea', 'id_alum_fk') || !tieneAtributo('Tarea', 'id_est_fk'))) obs.push("Tarea Incompleta: Requiere las llaves foráneas FK de Proyecto, Alumno y Estatus.");
+            if (atributos['Evidencia'] && !tieneAtributo('Evidencia', 'id_tarea_fk')) obs.push("Evidencia: Debe apuntar hacia 'id_tarea(FK)' para heredar el sprint.");
+
+            lanzarResultado('sim-academico', obs, "🎉 ¡Sencillamente perfecto! Tu diseño para proyectos académicos cumple con los estándares de calidad de software.");
+        }
+
+        function lanzarResultado(simId, obs, msjExito) {
+            if (obs.length === 0) {
+                document.querySelectorAll(`#${simId} .entidad-dropped`).forEach(el => el.classList.add('correct'));
+                alert(msjExito);
+            } else {
+                document.querySelectorAll(`#${simId} .entidad-dropped`).forEach(el => el.classList.add('incorrect'));
+                alert("❌ Inconsistencias lógicas detectadas:\n\n" + obs.join("\n"));
+            }
+        }
+    </script>
+</body>
+</html>
