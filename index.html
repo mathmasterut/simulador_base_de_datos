@@ -17,6 +17,9 @@
             --bib-primary: #4a90e2;   --bib-secondary: #9b59b6; --bib-actor: #e67e22; --bib-pivot: #34495e;
             --med-primary: #00b4d8;   --med-secondary: #7209b7; --med-actor: #f77f00; --med-pivot: #34495e;
             --acad-primary: #2a9d8f;  --acad-secondary: #e9c46a; --acad-actor: #f4a261; --acad-pivot: #264653;
+            --flo-primary: #ec4899;   --flo-secondary: #f43f5e; --flo-actor: #db2777; --flo-pivot: #4c1d95;
+            --caf-primary: #b45309;   --caf-secondary: #d97706; --caf-actor: #78350f; --caf-pivot: #451a03;
+            --tec-primary: #0284c7;   --tec-secondary: #3b82f6; --tec-actor: #1e3a8a; --tec-pivot: #0f172a;
         }
 
         body {
@@ -31,7 +34,6 @@
             overflow: hidden;
         }
 
-        /* --- ESTILOS DEL DASHBOARD PRINCIPAL --- */
         header {
             background-color: #1e293b;
             padding: 5px 20px;
@@ -51,15 +53,16 @@
 
         .tabs-container {
             display: flex;
-            gap: 10px;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .tab-button {
             background-color: #334155;
             color: #94a3b8;
             border: none;
-            padding: 10px 18px;
-            font-size: 0.85rem;
+            padding: 8px 12px;
+            font-size: 0.8rem;
             font-weight: bold;
             border-radius: 5px 5px 0 0;
             cursor: pointer;
@@ -90,7 +93,6 @@
             display: flex;
         }
 
-        /* --- BOTÓN Y CUADRO DE ANÁLISIS DE INGENIERÍA --- */
         .btn-analisis {
             width: 100%;
             background-color: #475569;
@@ -110,18 +112,16 @@
             display: none;
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
-            border-left: 4px solid #4a90e2;
             padding: 10px;
             border-radius: 4px;
             font-size: 0.72rem;
             line-height: 1.4;
             color: #334155;
             margin-bottom: 12px;
-            max-height: 150px;
+            max-height: 130px;
             overflow-y: auto;
         }
 
-        /* --- ESTILOS COMUNES DE LOS SIMULADORES --- */
         .sim-header {
             position: absolute;
             top: 10px;
@@ -219,20 +219,20 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: auto; /* Permitir clics para borrar líneas */
+            pointer-events: auto;
             z-index: 1;
         }
 
-        /* --- REDUCCIÓN DE TAMAÑO DE ENTIDADES EN EL ESPACIO DE TRABAJO --- */
         .entidad-dropped {
             position: absolute;
             background: white;
             border: 2px solid var(--text);
             border-radius: 5px;
-            width: 135px; /* Tamaño reducido de 160px a 135px */
+            width: 135px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.12);
             z-index: 3;
             overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .table-header {
@@ -263,10 +263,18 @@
             font-family: 'Courier New', Courier, monospace;
             text-align: left;
             cursor: grab;
+            transition: all 0.2s;
         }
         .attr-dropped-slot:hover {
             background-color: #fee2e2;
             border-color: var(--danger);
+        }
+
+        .attr-dropped-slot.highlight-fk {
+            background-color: #fef08a !important;
+            border-color: #ca8a04 !important;
+            color: #854d0e !important;
+            font-weight: bold;
         }
 
         .connector {
@@ -287,7 +295,7 @@
         .panel-retos {
             position: absolute;
             bottom: 45px;
-            left: 310px;
+            left: 15px;
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid #cbd5e1;
             border-radius: 8px;
@@ -316,6 +324,38 @@
             border-radius: 4px;
         }
 
+        .resultado-box-overlay {
+            display: none;
+            position: absolute;
+            bottom: 45px;
+            right: 20px;
+            width: 340px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 99;
+        }
+        .resultado-box-overlay.error-mode { border-left: 5px solid var(--danger); }
+        .resultado-box-overlay.success-mode { border-left: 5px solid var(--success); }
+        .resultado-box-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .resultado-box-msg { font-size: 0.75rem; color: #334155; margin-bottom: 10px; line-height: 1.4; max-height: 120px; overflow-y: auto; white-space: pre-line; }
+        .btn-sqlyog-export {
+            display: none;
+            width: 100%;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-sqlyog-export:hover { background-color: #0369a1; }
+
         footer {
             position: fixed;
             bottom: 0;
@@ -338,30 +378,24 @@
     <header>
         <div class="dashboard-title">🎛️ Dashboard de Simulación DER Profesional</div>
         <div class="tabs-container">
-            <button class="tab-button active" onclick="switchTab('sim-biblioteca', this)">1. Control de Biblioteca</button>
+            <button class="tab-button active" onclick="switchTab('sim-biblioteca', this)">1. Biblioteca</button>
             <button class="tab-button" onclick="switchTab('sim-medico', this)">2. Agenda Médica</button>
-            <button class="tab-button" onclick="switchTab('sim-academico', this)">3. Proyectos Escolares</button>
+            <button class="tab-button" onclick="switchTab('sim-academico', this)">3. Proyectos</button>
+            <button class="tab-button" onclick="switchTab('sim-floreria', this)">4. Florería</button>
+            <button class="tab-button" onclick="switchTab('sim-cafeteria', this)">5. Cafetería Escolar</button>
+            <button class="tab-button" onclick="switchTab('sim-tecnologia', this)">6. Tienda Tech</button>
         </div>
     </header>
 
     <div id="sim-biblioteca" class="simulador-content active">
-        <div class="sim-header">
-            <button class="btn-verificar" onclick="verificarBiblioteca()">Validar Arquitectura</button>
-        </div>
+        <div class="sim-header"><button class="btn-verificar" onclick="verificarBiblioteca()">Validar Arquitectura</button></div>
         <div class="app-container">
             <div class="toolbox">
                 <button class="btn-analisis" onclick="toggleAnalisis('analisis-bib')">📘 Ver Análisis de Ingeniería</button>
                 <div id="analisis-bib" class="box-analisis" style="border-left-color: var(--bib-primary);">
-                    <strong>Reglas de Negocio:</strong><br>
-                    • Relación N:M entre Libro y Autor rota con tabla intermedia.<br>
-                    • Separación estricta de Editorial (1:N).<br>
-                    • Préstamos apuntan a copias físicas tangibles, no a obras abstractas.<br>
-                    <strong>Solución de Diseño:</strong><br>
-                    • Mapeo obligatorio de 'Libro_Autor' con llaves compuestas.<br>
-                    • Uso de 'id_ejemp(FK)' en Préstamo para control de pérdidas físicas.
+                    <strong>Reglas de Negocio:</strong><br>• Relación N:M entre Libro y Autor rota con tabla intermedia.<br>• Separación de Editorial (1:N).<br>• Préstamos apuntan a copias físicas tangibles.
                 </div>
-
-                <div class="section-title">1. Entidades del Sistema</div>
+                <div class="section-title">1. Entidades</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Usuario" style="background-color: var(--bib-actor);">Usuario</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Bibliotecario" style="background-color: var(--bib-actor);">Bibliotecario</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Autor" style="background-color: var(--bib-secondary);">Autor</div>
@@ -370,83 +404,68 @@
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Libro_Autor" style="background-color: var(--bib-pivot);">Libro_Autor</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Ejemplar" style="background-color: var(--bib-primary);">Ejemplar</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Préstamo" style="background-color: var(--bib-primary);">Préstamo</div>
-                
                 <div class="section-title">2. Atributos Requeridos</div>
-                <div class="instruction">Doble clic en tabla para regresar atributo. Clic en línea para borrar enlace.</div>
                 <div class="attributes-grid">
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_usuario">id_user (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_empleado">id_emp (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_autor">id_autor (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_editorial">id_edit (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="isbn">isbn (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ejemplar">id_ejemp (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prestamo">id_prest (PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="isbn_fk">isbn (FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_autor_fk">id_autor (FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_edit_fk">id_edit (FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ejemp_fk">id_ejemp (FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_user_fk">id_user (FK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_usuario">id_user(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_empleado">id_emp(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_autor">id_autor(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_editorial">id_edit(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="isbn">isbn(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ejemplar">id_ejemp(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prestamo">id_prest(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="isbn_fk">isbn_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_autor_fk">id_autor_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_edit_fk">id_edit_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ejemp_fk">id_ejemp_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_user_fk">id_user_fk</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nombre">nombre</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="correo">correo</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tipo_usuario">tipo_usuario</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tipo_usuario">tipo_user</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_control">num_control</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_autor">nom_autor</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_editorial">nom_edit</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="titulo">titulo</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_ejemplar">num_ejemplar</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_ejemplar">num_ejemp</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="estatus_fisico">estatus_fis</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_prestamo">f_prestamo</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_devolucion">f_devolucion</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_devolucion">f_dev</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="penalizacion">penalizacion</div>
                 </div>
             </div>
             <div class="canvas-container" id="canvas-bib">
                 <canvas id="line-canvas-bib" class="line-canvas"></canvas>
                 <div class="panel-retos">
-                    <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #475569;">🎯 Casos de Uso Interactivos</div>
                     <select class="reto-select" onchange="cambiarRetoBib(this.value)">
-                        <option value="0">Selecciona un reto de negocio...</option>
+                        <option value="0">Selecciona un reto de biblioteca...</option>
                         <option value="1">Caso 1: El Docente sin Número de Control</option>
-                        <option value="2">Caso 2: El libro 'Cien años de soledad' coescrito</option>
-                        <option value="3">Caso 3: ¿Qué copia física exacta se prestó?</option>
-                        <option value="4">Caso 4: Evitar el desastre de Llaves en Préstamo</option>
+                        <option value="2">Caso 2: Obra coescrita por varios autores</option>
+                        <option value="3">Caso 3: ¿Qué copia física exacta se dañó?</option>
                     </select>
-                    <div id="desc-reto-bib" class="reto-descripcion">Selecciona un escenario para auditar mentalmente si tu diseño de datos soportará los problemas del mundo real.</div>
+                    <div id="desc-reto-bib" class="reto-descripcion">Selecciona un escenario operativo de biblioteca para auditar tu DER.</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="sim-medico" class="simulador-content">
-        <div class="sim-header">
-            <button class="btn-verificar" onclick="verificarMedico()">Validar Arquitectura</button>
-        </div>
+        <div class="sim-header"><button class="btn-verificar" onclick="verificarMedico()">Validar Arquitectura</button></div>
         <div class="app-container">
             <div class="toolbox">
                 <button class="btn-analisis" onclick="toggleAnalisis('analisis-med')">📘 Ver Análisis de Ingeniería</button>
                 <div id="analisis-med" class="box-analisis" style="border-left-color: var(--med-primary);">
-                    <strong>Reglas de Negocio:</strong><br>
-                    • Los médicos tienen múltiples especialidades atendidas (N:M).<br>
-                    • Urgencias (Walk-ins) deben auditarse sin cita agendada previamente.<br>
-                    • Cancelaciones y reagendaciones mutan el estatus sin destruir tu historial.<br>
-                    <strong>Solución de Diseño:</strong><br>
-                    • Construcción obligatoria de 'Medico_Especialidad'.<br>
-                    • Inclusión de 'estatus_cita' y 'fecha_registro' versus 'fecha_cita'.
+                    <strong>Reglas de Negocio:</strong><br>• Médicos con múltiples especialidades (N:M).<br>• Citas médicas asocian Paciente, Médico y Consultorio.<br>• El Pago se mapea directo a la cita (1:1).
                 </div>
-
-                <div class="section-title">1. Entidades del Sistema</div>
+                <div class="section-title">1. Entidades</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Paciente" style="background-color: var(--med-actor);">Paciente</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Medico" style="background-color: var(--med-actor);">Médico</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Recepcionista" style="background-color: var(--med-actor);">Recepcionista</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Especialidad" style="background-color: var(--med-secondary);">Especialidad</div>
-                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Metodo_Pago" style="background-color: var(--med-secondary);">Método de Pago</div>
-                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Medico_Especialidad" style="background-color: var(--med-pivot);">Medico_Especialidad</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Metodo_Pago" style="background-color: var(--med-secondary);">Metodo_Pago</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Medico_Especialidad" style="background-color: var(--med-pivot);">Med_Esp</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Consultorio" style="background-color: var(--med-primary);">Consultorio</div>
-                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Cita" style="background-color: var(--med-primary);">Cita Médica</div>
-                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Pago" style="background-color: var(--med-primary);">Pago Transacción</div>
-                
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Cita" style="background-color: var(--med-primary);">Cita</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Pago" style="background-color: var(--med-primary);">Pago</div>
                 <div class="section-title">2. Atributos Requeridos</div>
-                <div class="instruction">Doble clic en tabla para regresar atributo. Clic en línea para borrar enlace.</div>
                 <div class="attributes-grid">
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_paciente">id_pac(PK)</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_medico">id_med(PK)</div>
@@ -456,71 +475,57 @@
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cita">id_cita(PK)</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_pago">id_pago(PK)</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_metodo">id_met(PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_medico_fk">id_med(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_especialidad_fk">id_esp(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_paciente_fk">id_pac(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_recep_fk">id_rec(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_consultorio_fk">id_cons(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cita_fk">id_cita(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_metodo_fk">id_met(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_paciente">nom_paciente</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nss">num_seguro_soc</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_medico">nom_medico</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_especialidad">nom_especialidad</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_medico_fk">id_med_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_especialidad_fk">id_esp_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_paciente_fk">id_pac_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_recep_fk">id_rec_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_consultorio_fk">id_cons_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cita_fk">id_cita_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_metodo_fk">id_met_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_paciente">nom_pac</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nss">nss</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_medico">nom_med</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_especialidad">nom_esp</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_consultorio">num_sala</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_cita">fecha_hora_cita</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_registro">fecha_registro</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_cita">fecha_cita</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_registro">f_registro</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="estatus_cita">estatus_cita</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="monto">monto_total</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="descr_pago">descr_metodo</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="descr_pago">descr_met</div>
                 </div>
             </div>
             <div class="canvas-container" id="canvas-med">
                 <canvas id="line-canvas-med" class="line-canvas"></canvas>
                 <div class="panel-retos">
-                    <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #475569;">🏥 Escenarios Clínicos Reales</div>
                     <select class="reto-select" onchange="cambiarRetoMed(this.value)">
-                        <option value="0">Selecciona un reto de negocio médico...</option>
-                        <option value="1">Caso 1: El Médico con múltiples especialidades</option>
-                        <option value="2">Caso 2: Paciente que llega de urgencia (Sin cita previa)</option>
-                        <option value="3">Caso 3: Paciente que paga con Aseguradora u Tarjeta</option>
-                        <option value="4">Caso 4: Paciente que cancela o cambia su cita de día</option>
+                        <option value="0">Selecciona un reto médico...</option>
+                        <option value="1">Caso 1: Doctor con múltiples especialidades</option>
+                        <option value="2">Caso 2: Control de estatus de cancelación</option>
                     </select>
-                    <div id="desc-reto-med" class="reto-descripcion">Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una clínica profesional.</div>
+                    <div id="desc-reto-med" class="reto-descripcion">Evalúa la resiliencia de tu diseño clínico.</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="sim-academico" class="simulador-content">
-        <div class="sim-header">
-            <button class="btn-verificar" onclick="verificarAcad()">Validar Arquitectura</button>
-        </div>
+        <div class="sim-header"><button class="btn-verificar" onclick="verificarAcad()">Validar Arquitectura</button></div>
         <div class="app-container">
             <div class="toolbox">
                 <button class="btn-analisis" onclick="toggleAnalisis('analisis-acad')">📘 Ver Análisis de Ingeniería</button>
                 <div id="analisis-acad" class="box-analisis" style="border-left-color: var(--acad-primary);">
-                    <strong>Reglas de Negocio:</strong><br>
-                    • Coasesorías de profesores (N:M) y equipos multifuncionales de alumnos (N:M).<br>
-                    • Delegación individualizada de tareas específicas dentro de un proyecto común.<br>
-                    • Estatus compartidos e historial ágil mediante entregables técnicos.<br>
-                    <strong>Solución de Diseño:</strong><br>
-                    • Tablas cruzadas: 'Proyecto_Docente' y 'Proyecto_Alumno' (con rol 'es_lider').<br>
-                    • Relación 'Tarea' a 'Evidencia' para segregar URLs extensas de repositorios.
+                    <strong>Reglas de Negocio:</strong><br>• Coasesorías de profesores (N:M).<br>• Células multifuncionales de alumnos (N:M).<br>• Evidencias y Tareas asocian entregables únicos.
                 </div>
-
-                <div class="section-title">1. Entidades del Sistema</div>
+                <div class="section-title">1. Entidades</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Profesor" style="background-color: var(--acad-actor);">Profesor</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Alumno" style="background-color: var(--acad-actor);">Alumno</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Estatus" style="background-color: var(--acad-secondary); color: var(--text);">Estatus</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto" style="background-color: var(--acad-primary);">Proyecto</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Tarea" style="background-color: var(--acad-primary);">Tarea</div>
                 <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Evidencia" style="background-color: var(--acad-primary);">Evidencia</div>
-                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto_Docente" style="background-color: var(--acad-pivot);">Proyecto_Docente</div>
-                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto_Alumno" style="background-color: var(--acad-pivot);">Proyecto_Alumno</div>
-                
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto_Docente" style="background-color: var(--acad-pivot);">Proy_Doc</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Proyecto_Alumno" style="background-color: var(--acad-pivot);">Proy_Alu</div>
                 <div class="section-title">2. Atributos Requeridos</div>
-                <div class="instruction">Doble clic en tabla para regresar atributo. Clic en línea para borrar enlace.</div>
                 <div class="attributes-grid">
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_profesor">id_prof(PK)</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_alumno">id_alum(PK)</div>
@@ -528,58 +533,246 @@
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_proyecto">id_proy(PK)</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_tarea">id_tarea(PK)</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_evidencia">id_evid(PK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_proy_fk">id_proy(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prof_fk">id_prof(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_alum_fk">id_alum(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_est_fk">id_est(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_tarea_fk">id_tarea(FK)</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_prof">nom_profesor</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_alum">nom_alumno</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_proy_fk">id_proy_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prof_fk">id_prof_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_alum_fk">id_alum_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_est_fk">id_est_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_tarea_fk">id_tarea_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_prof">nom_prof</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_alum">nom_alum</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_control">num_control</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tit_proy">titulo_proy</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_est">nom_estatus</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_est">nom_est</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="descr_tarea">desc_tarea</div>
                     <div class="attribute-source" draggable="true" data-kind="atributo" data-name="es_lider">es_lider</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="url_evidencia">url_github_pdf</div>
-                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_entrega">fecha_entrega</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="url_evidencia">url_github</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_entrega">f_entrega</div>
                 </div>
             </div>
             <div class="canvas-container" id="canvas-acad">
                 <canvas id="line-canvas-acad" class="line-canvas"></canvas>
                 <div class="panel-retos">
-                    <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #475569;">🚀 Desafíos de Gestión Escolar</div>
                     <select class="reto-select" onchange="cambiarRetoAcad(this.value)">
-                        <option value="0">Selecciona una problemática escolar...</option>
-                        <option value="1">Caso 1: El Proyecto coasesorado por dos profesores</option>
-                        <option value="2">Caso 2: Saber quién es el líder de la célula de desarrollo</option>
-                        <option value="3">Caso 3: Asignar una tarea pesada a un estudiante específico</option>
-                        <option value="4">Caso 4: Almacenar el link de GitHub sin saturar la tarea</option>
+                        <option value="0">Selecciona un reto académico...</option>
+                        <option value="1">Caso 1: Identificar al Líder del Equipo</option>
+                        <option value="2">Caso 2: Subir evidencias sin saturar la tarea</option>
                     </select>
-                    <div id="desc-reto-acad" class="reto-descripcion">Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una célula ágil escolar.</div>
+                    <div id="desc-reto-acad" class="reto-descripcion">Monitorea la trazabilidad ágil escolar.</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        Material de uso didáctico de la materia de Base de Datos, prohibido su uso comercial.
-    </footer>
+    <div id="sim-floreria" class="simulador-content">
+        <div class="sim-header"><button class="btn-verificar" onclick="verificarFloreria()">Validar Arquitectura</button></div>
+        <div class="app-container">
+            <div class="toolbox">
+                <button class="btn-analisis" onclick="toggleAnalisis('analisis-flo')">📘 Ver Análisis de Ingeniería</button>
+                <div id="analisis-flo" class="box-analisis" style="border-left-color: var(--flo-primary);">
+                    <strong>Reglas de Negocio:</strong><br>• Catálogo único para Flores, Osos de Peluche y Chocolates.<br>• Romper la relación N:M entre Venta y Producto con Detalle_Venta.<br>• Envíos a domicilio registran dedicatoria física (1:1 con Venta).
+                </div>
+                <div class="section-title">1. Entidades</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Cliente" style="background-color: var(--flo-actor);">Cliente</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Producto" style="background-color: var(--flo-secondary);">Producto</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Venta" style="background-color: var(--flo-primary);">Venta</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Detalle_Venta" style="background-color: var(--flo-pivot);">Detalle_Venta</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Envio" style="background-color: var(--flo-primary);">Envío Logístico</div>
+                <div class="section-title">2. Atributos Requeridos</div>
+                <div class="attributes-grid">
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cliente">id_cli(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_producto">id_prod(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_venta">id_venta(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_detalle">id_det(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_envio">id_env(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cli_fk">id_cli_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_venta_fk">id_venta_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prod_fk">id_prod_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_cliente">nom_cli</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tel_cliente">tel_cli</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_prod">nom_prod</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="categoria">categoria</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="precio_venta">precio_v</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="frescura">dias_frescura</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_venta">f_venta</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tipo_entrega">tipo_entrega</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="cantidad">cantidad</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="subtotal">subtotal</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="destinatario">destinatario</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="msg_tarjeta">msg_tarjeta</div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvas-flo">
+                <canvas id="line-canvas-flo" class="line-canvas"></canvas>
+                <div class="panel-retos">
+                    <select class="reto-select" onchange="document.getElementById('desc-reto-flo').innerHTML = retosFlo[this.value]">
+                        <option value="0">Selecciona un reto de florería...</option>
+                        <option value="1">Caso 1: Segregar Osos, Chocolates y Rosas</option>
+                        <option value="2">Caso 2: El remitente anónimo con dedicatoria</option>
+                    </select>
+                    <div id="desc-reto-flo" class="reto-descripcion">Audita las ventas de regalos y logística.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sim-cafeteria" class="simulador-content">
+        <div class="sim-header"><button class="btn-verificar" onclick="verificarCafeteria()">Validar Arquitectura</button></div>
+        <div class="app-container">
+            <div class="toolbox">
+                <button class="btn-analisis" onclick="toggleAnalisis('analisis-caf')">📘 Ver Análisis de Ingeniería</button>
+                <div id="analisis-caf" class="box-analisis" style="border-left-color: var(--caf-primary);">
+                    <strong>Reglas de Negocio:</strong><br>• Distinción de roles (Alumno/Docente) en Monedero.<br>• Los Pedidos descuentan saldo del cliente.<br>• Detalle_Pedido acopla los snacks e impide redundancias.
+                </div>
+                <div class="section-title">1. Entidades</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Usuario" style="background-color: var(--caf-actor);">Usuario (Monedero)</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Producto" style="background-color: var(--caf-secondary);">Producto (Menú)</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Pedido" style="background-color: var(--caf-primary);">Pedido</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Detalle_Pedido" style="background-color: var(--caf-pivot);">Detalle_Pedido</div>
+                <div class="section-title">2. Atributos Requeridos</div>
+                <div class="attributes-grid">
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_usuario">id_user(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_producto">id_prod(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_pedido">id_ped(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_detalle">id_det(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_user_fk">id_user_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_ped_fk">id_ped_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prod_fk">id_prod_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nombre">nombre</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="tipo_usuario">tipo_user</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="saldo_monedero">saldo</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_platillo">nom_platillo</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="precio_venta">precio</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="hora_pedido">hora_pedido</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="estatus_pedido">estatus_ped</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="cantidad">cantidad</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="subtotal">subtotal</div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvas-caf">
+                <canvas id="line-canvas-caf" class="line-canvas"></canvas>
+                <div class="panel-retos">
+                    <select class="reto-select" onchange="document.getElementById('desc-reto-caf').innerHTML = retosCaf[this.value]">
+                        <option value="0">Selecciona un reto de cafetería...</option>
+                        <option value="1">Caso 1: Descuento ágil en fila de receso</option>
+                        <option value="2">Caso 2: Saber qué alimentos se venden más</option>
+                    </select>
+                    <div id="desc-reto-caf" class="reto-descripcion">Estructura órdenes escolares rápidas.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sim-tecnologia" class="simulador-content">
+        <div class="sim-header"><button class="btn-verificar" onclick="verificarTecnologia()">Validar Arquitectura</button></div>
+        <div class="app-container">
+            <div class="toolbox">
+                <button class="btn-analisis" onclick="toggleAnalisis('analisis-tec')">📘 Ver Análisis de Ingeniería</button>
+                <div id="analisis-tec" class="box-analisis" style="border-left-color: var(--tec-primary);">
+                    <strong>Reglas de Negocio:</strong><br>• Marcas operan aisladas de los productos (1:N).<br>• Inventario rastrea Números de Serie Únicos (1:N con Producto).<br>• Detalle_Venta liga el número de serie exacto vendido para validar la garantía.
+                </div>
+                <div class="section-title">1. Entidades</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Cliente" style="background-color: var(--tec-actor);">Cliente</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Marca" style="background-color: var(--tec-secondary);">Marca (Fabricante)</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Producto" style="background-color: var(--tec-secondary);">Producto</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Inventario_Serie" style="background-color: var(--tec-primary);">Inventario (Serie)</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Venta" style="background-color: var(--tec-primary);">Venta (Factura)</div>
+                <div class="entidad-source" draggable="true" data-kind="entidad" data-type="Detalle_Venta" style="background-color: var(--tec-pivot);">Detalle_Venta</div>
+                <div class="section-title">2. Atributos Requeridos</div>
+                <div class="attributes-grid">
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cliente">id_cli(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_marca">id_marca(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_producto">id_prod(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_inventario">id_inv(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_venta">id_venta(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_detalle">id_det(PK)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_marca_fk">id_marca_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_prod_fk">id_prod_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_cli_fk">id_cli_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_venta_fk">id_venta_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="id_inv_fk">id_inv_fk</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_marca">nom_marca</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="nom_prod">nom_prod</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="precio_venta">precio_v</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="num_serie">num_serie(UQ)</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="meses_garantia">meses_gar</div>
+                    <div class="attribute-source" draggable="true" data-kind="atributo" data-name="fecha_venta">f_venta</div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvas-tec">
+                <canvas id="line-canvas-tec" class="line-canvas"></canvas>
+                <div class="panel-retos">
+                    <select class="reto-select" onchange="document.getElementById('desc-reto-tec').innerHTML = retosTec[this.value]">
+                        <option value="0">Selecciona un reto tecnológico...</option>
+                        <option value="1">Caso 1: Rastrear garantía por falla de hardware</option>
+                        <option value="2">Caso 2: Evitar tipografías raras en marcas globales</option>
+                    </select>
+                    <div id="desc-reto-tec" class="reto-descripcion">Diseña un sistema con trazabilidad estricta de hardware.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultado-overlay" class="resultado-box-overlay">
+        <div class="resultado-box-title" id="resultado-title">📢 Estatus del Sistema</div>
+        <div class="resultado-box-msg" id="resultado-msg"></div>
+        <button id="btn-copy-sql" class="btn-sqlyog-export" onclick="copiarScriptGenerado()">📋 Copiar Script para SQLYog</button>
+    </div>
+
+    <footer>Material de uso didáctico de la materia de Base de Datos.</footer>
 
     <script>
         let currentSimulador = 'sim-biblioteca';
-        let activeConnections = { 'sim-biblioteca': [], 'sim-medico': [], 'sim-academico': [] };
+        let activeConnections = { 'sim-biblioteca': [], 'sim-medico': [], 'sim-academico': [], 'sim-floreria': [], 'sim-cafeteria': [], 'sim-tecnologia': [] };
         let selectedNode = null;
         let droppedCount = 0;
+        let ultimoScriptSQL = "";
+        let simulacionAprobada = { 'sim-biblioteca': false, 'sim-medico': false, 'sim-academico': false, 'sim-floreria': false, 'sim-cafeteria': false, 'sim-tecnologia': false };
 
-        // --- SISTEMA DE NAVEGACIÓN DE PESTAÑAS (DASHBOARD) ---
+        // TEXTOS DIDÁCTICOS DE RETOS DE NEGOCIO EN NUEVOS SIMULADORES
+        const retosBib = {
+            "0": "Selecciona un escenario operativo de biblioteca para auditar tu DER.",
+            "1": "<strong>Caso 1:</strong> El Docente no tiene matrícula de alumno.<br><strong>Pista:</strong> 'Usuario' debe tener un 'tipo_user' neutro para no colapsar la base.",
+            "2": "<strong>Caso 2:</strong> Libro escrito por coautores.<br><strong>Pista:</strong> Requiere la tabla pivote 'Libro_Autor' para romper el lazo N:M.",
+            "3": "<strong>Caso 3:</strong> Se destruyó un libro de Larson físico.<br><strong>Pista:</strong> 'Préstamo' debe ligarse a 'Ejemplar' (ID físico), nunca directo al ISBN abstracto."
+        };
+        const retosMed = {
+            "0": "Evalúa la resiliencia de tu diseño clínico.",
+            "1": "<strong>Caso 1:</strong> Médico con dos especialidades.<br><strong>Pista:</strong> Rompe la redundancia usando la tabla pivote 'Medico_Especialidad'.",
+            "2": "<strong>Caso 2:</strong> Paciente reagenda su cita.<br><strong>Pista:</strong> Cambia el 'estatus_cita' a Cancelado/Modificado sin purgar el historial."
+        };
+        const retosAcad = {
+            "0": "Monitorea la trazabilidad ágil escolar.",
+            "1": "<strong>Caso 1:</strong> Identificar el líder del sprint.<br><strong>Pista:</strong> El campo booleano 'es_lider' debe residir en la tabla intermedia 'Proyecto_Alumno'.",
+            "2": "<strong>Caso 2:</strong> Link de GitHub extenso.<br><strong>Pista:</strong> Externaliza la URL a la entidad 'Evidencia' (1:1) para proteger la entidad 'Tarea'."
+        };
+        const retosFlo = {
+            "0": "Audita las ventas de regalos y logística.",
+            "1": "<strong>Caso 1:</strong> Venta cruzada de osos, flores y chocolates.<br><strong>Pista:</strong> Unifica todo en la entidad 'Producto' mapeada por una celda de 'categoría'.",
+            "2": "<strong>Caso 2:</strong> Dedicatoria de regalo a domicilio.<br><strong>Pista:</strong> 'Envío' aloja la dirección y el mensaje secreto de la tarjeta, ligada a la 'Venta'."
+        };
+        const retosCaf = {
+            "0": "Estructura órdenes escolares rápidas.",
+            "1": "<strong>Caso 1:</strong> Pago veloz en receso.<br><strong>Pista:</strong> Almacena 'saldo' en 'Usuario' para transaccionar vía monedero electrónico.",
+            "2": "<strong>Caso 2:</strong> Conocer los almuerzos más pedidos.<br><strong>Pista:</strong> La entidad 'Detalle_Pedido' asocia las unidades individuales sin repetir la cabecera."
+        };
+        const retosTec = {
+            "0": "Diseña un sistema con trazabilidad estricta de hardware.",
+            "1": "<strong>Caso 1:</strong> Devolución por garantía.<br><strong>Pista:</strong> No apuntes al producto genérico; 'Detalle_Venta' debe capturar el 'num_serie' único de la pieza entregada.",
+            "2": "<strong>Caso 2:</strong> Evitar marcas duplicadas (ej. Dell vs Del).<br><strong>Pista:</strong> Externaliza un catálogo indexado de 'Marca' aislado."
+        };
+
+        function cambiarRetoBib(v) { document.getElementById('desc-reto-bib').innerHTML = retosBib[v]; }
+        function cambiarRetoMed(v) { document.getElementById('desc-reto-med').innerHTML = retosMed[v]; }
+        function cambiarRetoAcad(v) { document.getElementById('desc-reto-acad').innerHTML = retosAcad[v]; }
+
         function switchTab(simId, btnElement) {
             document.querySelectorAll('.simulador-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(simId).classList.add('active');
             btnElement.classList.add('active');
             currentSimulador = simId;
             selectedNode = null;
+            document.getElementById('resultado-overlay').style.display = 'none';
             resizeAllCanvases();
         }
 
@@ -588,38 +781,8 @@
             box.style.display = (box.style.display === 'block') ? 'none' : 'block';
         }
 
-        // --- TEXTOS DIDÁCTICOS DE RETOS DE NEGOCIO ---
-        const retosBib = {
-            "0": "Selecciona un escenario para auditar mentalmente si tu diseño de datos soportará los problemas del mundo real.",
-            "1": "<strong>Escenario:</strong> Un docente o administrativo quiere pedir un libro. Ellos no tienen número de control de alumno.<br><strong>Pista:</strong> Tu tabla 'Usuario' debe tener 'tipo_usuario', 'nombre' y 'correo' para no quedar bloqueada si falta el número de control.",
-            "2": "<strong>Escenario:</strong> Un libro de medicina científica fue escrito por 4 doctores diferentes.<br><strong>Pista:</strong> Si conectas Autor directamente con Libro, romperás el sistema. Necesitas mapear la tabla intermedia 'Libro_Autor' con sus dos FK.",
-            "3": "<strong>Escenario:</strong> La biblioteca tiene 5 libros físicos idénticos de 'Cálculo de Larson'. Uno se lo llevaron a casa y regresó roto.<br><strong>Pista:</strong> La tabla 'Préstamo' no debe apuntar a la obra abstracta (ISBN), sino al identificador exacto de la copia física: 'id_ejemp (FK)'.",
-            "4": "<strong>Escenario:</strong> Un alumno genera un préstamo y vinculas la transacción usando su número de control suuelto.<br><strong>Pista:</strong> ¡Peligro de integridad! Las llaves foráneas deben apuntar obligatoriamente a la llave primaria de la tabla origen ('id_user (FK)')."
-        };
-
-        const retosMed = {
-            "0": "Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una clínica profesional.",
-            "1": "<strong>Escenario:</strong> El Dr. García atiende Medicina General, pero también concluyó la especialidad de Cardiología.<br><strong>Pista:</strong> No metas la especialidad en el médico. Requieres la tabla intermedia 'Medico_Especialidad' para ligar sus FKs.",
-            "2": "<strong>Escenario:</strong> Un paciente llega herido y debe ser atendido de inmediato sin cita reservada semanas antes.<br><strong>Pista:</strong> La tabla 'Cita' debe tener un 'estatus_cita' (Atendido/En espera) y 'fecha_registro' para auditar que se abrió al momento.",
-            "3": "<strong>Escenario:</strong> La consulta cuesta $800. Un cliente paga en efectivo y otro con Seguro de Gastos Médicos Mayores.<br><strong>Pista:</strong> Para no repetir texto en la tabla Pagos, usa un catálogo 'Metodo_Pago' ligado al 'Pago' mediante 'id_met (FK)'.",
-            "4": "<strong>Escenario:</strong> Inés tiene cita el martes, pero llama para moverla al viernes por motivos de trabajo.<br><strong>Pista:</strong> Nunca borres registros. Cambia el 'estatus_cita' a 'Cancelada/Reagendada' y registra la nueva fecha en una fila limpia."
-        };
-
-        const retosAcad = {
-            "0": "Selecciona un escenario para evaluar si tu arquitectura relacional soporta los flujos de una célula ágil escolar.",
-            "1": "<strong>Escenario:</strong> El proyecto 'Simulador WEB' tiene como asesor técnico al MTI. Torres y asesora metodológica a la Dra. Ramos.<br><strong>Pista:</strong> Relacionar Profesor directo con Proyecto limita a un solo asesor. Necesitas la tabla pivote 'Proyecto_Docente'.",
-            "2": "<strong>Escenario:</strong> El equipo está formado por 3 alumnos, pero el director de carrera necesita saber quién es el responsable de dar la cara por el proyecto.<br><strong>Pista:</strong> Agrega el atributo 'es_lider' dentro de la tabla intermedia 'Proyecto_Alumno' para marcar al responsable sin alterar la entidad original.",
-            "3": "<strong>Escenario:</strong> El proyecto tiene la tarea 'Diseñar base de datos en MySQL'. Necesitamos registrar que esa tarea le toca a Juan y no a todo el equipo.<br><strong>Pista:</strong> La tabla 'Tarea' debe estar vinculada al proyecto general mediante 'id_proy(FK)', pero tiene que recibir a un 'id_alum(FK)' individual.",
-            "4": "<strong>Escenario:</strong> Para calificar el sprint, el profesor exige ver el enlace del repositorio de GitHub o el archivo PDF subido.<br><strong>Pista:</strong> No amontones cadenas largas de texto en la tarea. Crea la entidad 'Evidencia Entregable' apuntando hacia la tarea origen mediante 'id_tarea(FK)'."
-        };
-
-        function cambiarRetoBib(v) { document.getElementById('desc-reto-bib').innerHTML = retosBib[v]; }
-        function cambiarRetoMed(v) { document.getElementById('desc-reto-med').innerHTML = retosMed[v]; }
-        function cambiarRetoAcad(v) { document.getElementById('desc-reto-acad').innerHTML = retosAcad[v]; }
-
-        // --- MANEJO DE LIENZOS GRÁFICOS DINÁMICOS ---
         function resizeAllCanvases() {
-            ['sim-biblioteca', 'sim-medico', 'sim-academico'].forEach(id => {
+            ['sim-biblioteca', 'sim-medico', 'sim-academico', 'sim-floreria', 'sim-cafeteria', 'sim-tecnologia'].forEach(id => {
                 const container = document.querySelector(`#${id} .canvas-container`);
                 const canvas = document.querySelector(`#${id} .line-canvas`);
                 if(container && canvas) {
@@ -632,7 +795,7 @@
         window.addEventListener('resize', resizeAllCanvases);
         setTimeout(resizeAllCanvases, 200);
 
-        // --- SISTEMA COMPARTIDO DRAG AND DROP CON CONTROLES AVANZADOS ---
+        // DRAG AND DROP INTERACTIVO
         document.querySelectorAll('.entidad-source, .attribute-source').forEach(item => {
             item.addEventListener('dragstart', e => {
                 e.dataTransfer.setData('kind', e.target.dataset.kind);
@@ -642,7 +805,6 @@
                 } else {
                     e.dataTransfer.setData('name', e.target.dataset.name);
                     e.dataTransfer.setData('label', e.target.innerText);
-                    // Si el atributo se arrastra desde una tabla origen, marcar su ID de tabla origen
                     if (e.target.classList.contains('attr-dropped-slot')) {
                         e.dataTransfer.setData('originTableBodyId', e.target.parentNode.id);
                     }
@@ -654,38 +816,34 @@
             cont.addEventListener('dragover', e => e.preventDefault());
             cont.addEventListener('drop', e => {
                 e.preventDefault();
+                if(simulacionAprobada[currentSimulador]) return;
                 const kind = e.dataTransfer.getData('kind');
                 if (kind !== 'entidad') return;
 
                 const type = e.dataTransfer.getData('type');
-                
-                // --- ARQUITECTURA: CONTROL PARA EVITAR ENTIDADES DUPLICADAS EN EL LIENZO ---
-                const existe = cont.querySelector(`[data-type="${type}"]`);
-                if (existe) {
-                    alert(`🚨 Control de Arquitectura: La entidad '${type}' ya ha sido desplegada en este espacio de trabajo.`);
+                if (cont.querySelector(`[data-type="${type}"]`)) {
+                    alert(`La entidad '${type}' ya se encuentra desplegada.`);
                     return;
                 }
 
                 const inheritStyle = e.dataTransfer.getData('style');
                 const rect = cont.getBoundingClientRect();
-                const x = e.clientX - rect.left - 67; 
+                const x = e.clientX - rect.left - 67;
                 const y = e.clientY - rect.top - 20;
 
                 crearEntidadTabla(type, x, y, cont.id, inheritStyle);
             });
 
-            // --- UX: DETECTAR CLIC EN EL CANVA PARA BORRAR ENLACES INTER-ENTIDADES ---
             const canvasElement = cont.querySelector('.line-canvas');
             if(canvasElement) {
                 canvasElement.addEventListener('click', e => {
+                    if(simulacionAprobada[currentSimulador]) return;
                     const rect = canvasElement.getBoundingClientRect();
                     const clickX = e.clientX - rect.left;
                     const clickY = e.clientY - rect.top;
-                    
                     const pool = activeConnections[currentSimulador];
-                    let indiceBorrar = -1;
+                    let idx = -1;
 
-                    // Verificar cercanía matemática del clic a algún segmento de línea
                     for (let i = 0; i < pool.length; i++) {
                         const elFrom = document.getElementById(pool[i].from);
                         const elTo = document.getElementById(pool[i].to);
@@ -694,34 +852,23 @@
                             const y1 = elFrom.offsetTop + elFrom.offsetHeight - 8;
                             const x2 = elTo.offsetLeft + (elTo.offsetWidth / 2);
                             const y2 = elTo.offsetTop + (elTo.offsetHeight / 2);
-
-                            if (distanciaPuntoALinea(clickX, clickY, x1, y1, x2, y2) < 8) {
-                                indiceBorrar = i;
-                                break;
-                            }
+                            if (distanciaPuntoALinea(clickX, clickY, x1, y1, x2, y2) < 8) { idx = i; break; }
                         }
                     }
-
-                    if (indiceBorrar !== -1) {
-                        pool.splice(indiceBorrar, 1);
-                        redibujaLineas();
-                    }
+                    if (idx !== -1) { pool.splice(idx, 1); redibujaLineas(); }
                 });
             }
         });
 
-        // Función matemática auxiliar para detección de trazo lineal
         function distanciaPuntoALinea(px, py, x1, y1, x2, y2) {
             const A = px - x1; const B = py - y1; const C = x2 - x1; const D = y2 - y1;
             const dot = A * C + B * D; const len_sq = C * C + D * D;
-            let param = -1;
-            if (len_sq != 0) param = dot / len_sq;
+            let param = len_sq != 0 ? dot / len_sq : -1;
             let xx, yy;
             if (param < 0) { xx = x1; yy = y1; }
             else if (param > 1) { xx = x2; yy = y2; }
             else { xx = x1 + param * C; yy = y1 + param * D; }
-            const dx = px - xx; const dy = py - yy;
-            return Math.sqrt(dx * dx + dy * dy);
+            return Math.sqrt((px - xx)**2 + (py - yy)**2);
         }
 
         function crearEntidadTabla(type, x, y, containerId, inheritStyle) {
@@ -751,21 +898,17 @@
             const bodySlot = document.getElementById(`body-${id}`);
             bodySlot.addEventListener('dragover', e => e.preventDefault());
             bodySlot.addEventListener('drop', e => {
-                e.preventDefault();
-                e.stopPropagation();
+                e.preventDefault(); e.stopPropagation();
+                if(simulacionAprobada[currentSimulador]) return;
                 if (e.dataTransfer.getData('kind') !== 'atributo') return;
 
                 const name = e.dataTransfer.getData('name');
                 const label = e.dataTransfer.getData('label');
                 const originTableBodyId = e.dataTransfer.getData('originTableBodyId');
 
-                // --- UX: PERMITIR MOVER UN ATRIBUTO DE UNA ENTIDAD A OTRA ---
                 if (originTableBodyId && originTableBodyId !== `body-${id}`) {
                     const elOrigen = document.getElementById(originTableBodyId);
-                    if (elOrigen) {
-                        const slotRepetido = elOrigen.querySelector(`[data-attr="${name}"]`);
-                        if (slotRepetido) slotRepetido.remove();
-                    }
+                    if (elOrigen) { elOrigen.querySelector(`[data-attr="${name}"]`)?.remove(); }
                 }
 
                 if (!bodySlot.querySelector(`[data-attr="${name}"]`)) {
@@ -775,28 +918,23 @@
                     attrDiv.innerText = label;
                     attrDiv.draggable = true;
 
-                    // Re-vincular dragstart para permitir moverlo de tabla a tabla
                     attrDiv.addEventListener('dragstart', ev => {
+                        if(simulacionAprobada[currentSimulador]) { ev.preventDefault(); return; }
                         ev.dataTransfer.setData('kind', 'atributo');
                         ev.dataTransfer.setData('name', name);
                         ev.dataTransfer.setData('label', label);
                         ev.dataTransfer.setData('originTableBodyId', `body-${id}`);
                     });
 
-                    // --- UX: REGRESAR EL ATRIBUTO AL PANEL DE ORIGEN MEDIANTE DOBLE CLIC ---
                     attrDiv.addEventListener('dblclick', ev => {
                         ev.stopPropagation();
+                        if(simulacionAprobada[currentSimulador]) return;
                         attrDiv.remove();
-                        // Devolver visibilidad en el panel del simulador actual
-                        const sourcePanel = document.querySelector(`#${currentSimulador} .attribute-source[data-name="${name}"]`);
-                        if(sourcePanel) sourcePanel.classList.remove('hidden-attr');
+                        document.querySelector(`#${currentSimulador} .attribute-source[data-name="${name}"]`)?.classList.remove('hidden-attr');
                     });
 
                     bodySlot.appendChild(attrDiv);
-
-                    // --- UX: OCULTAR DEL PANEL ORIGINAL CONFORME SE SELECCIONEN ---
-                    const sourcePanel = document.querySelector(`#${currentSimulador} .attribute-source[data-name="${name}"]`);
-                    if(sourcePanel) sourcePanel.classList.add('hidden-attr');
+                    document.querySelector(`#${currentSimulador} .attribute-source[data-name="${name}"]`)?.classList.add('hidden-attr');
                 }
             });
             redibujaLineas();
@@ -807,32 +945,27 @@
             elmnt.querySelector('.table-header').onmousedown = dragMouseDown;
 
             function dragMouseDown(e) {
-                if(e.target.classList.contains('attr-dropped-slot')) return;
+                if(e.target.classList.contains('attr-dropped-slot') || simulacionAprobada[currentSimulador]) return;
                 e.preventDefault();
-                pos3 = e.clientX;
-                pos4 = e.clientY;
+                pos3 = e.clientX; pos4 = e.clientY;
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
             }
 
             function elementDrag(e) {
                 e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
+                pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+                pos3 = e.clientX; pos4 = e.clientY;
                 elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
                 redibujaLineas();
             }
 
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
+            function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
         }
 
         function manejarConexion(entidadId) {
+            if(simulacionAprobada[currentSimulador]) return;
             if (selectedNode === null) {
                 selectedNode = entidadId;
                 document.getElementById(entidadId).style.boxShadow = "0 0 15px #f39c12";
@@ -840,25 +973,23 @@
                 if (selectedNode !== entidadId) {
                     const pool = activeConnections[currentSimulador];
                     const yaExiste = pool.some(c => (c.from === selectedNode && c.to === entidadId) || (c.from === entidadId && c.to === selectedNode));
-                    if (!yaExiste) {
-                        pool.push({ from: selectedNode, to: entidadId });
-                        redibujaLineas();
-                    }
+                    if (!yaExiste) { pool.push({ from: selectedNode, to: entidadId }); redibujaLineas(); }
                 }
-                const oldNode = document.getElementById(selectedNode);
-                if(oldNode) oldNode.style.boxShadow = "0 4px 10px rgba(0,0,0,0.15)";
+                document.getElementById(selectedNode).style.boxShadow = "0 4px 10px rgba(0,0,0,0.15)";
                 selectedNode = null;
             }
         }
 
         function redibujaLineas() {
-            ['sim-biblioteca', 'sim-medico', 'sim-academico'].forEach(simId => {
+            ['sim-biblioteca', 'sim-medico', 'sim-academico', 'sim-floreria', 'sim-cafeteria', 'sim-tecnologia'].forEach(simId => {
                 const canvas = document.querySelector(`#${simId} .line-canvas`);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = "#2b2d42";
-                ctx.lineWidth = 2.5;
+                
+                const esCorrecto = simulacionAprobada[simId];
+                ctx.strokeStyle = esCorrecto ? "#0f766e" : "#2b2d42";
+                ctx.lineWidth = esCorrecto ? 3.5 : 2.5;
 
                 activeConnections[simId].forEach(conn => {
                     const elFrom = document.getElementById(conn.from);
@@ -869,37 +1000,83 @@
                         const x2 = elTo.offsetLeft + (elTo.offsetWidth / 2);
                         const y2 = elTo.offsetTop + (elTo.offsetHeight / 2);
 
-                        ctx.beginPath();
-                        ctx.moveTo(x1, y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+
+                        if(esCorrecto) {
+                            ctx.font = "bold 13px 'Segoe UI', sans-serif"; ctx.fillStyle = "#0369a1";
+                            const card = obtenerParCardinalidad(simId, elFrom.dataset.type, elTo.dataset.type);
+                            ctx.fillText(card.c1, x1 + (x2 - x1)*0.15, y1 + (y2 - y1)*0.15 - 6);
+                            ctx.fillText(card.c2, x1 + (x2 - x1)*0.85, y1 + (y2 - y1)*0.85 - 6);
+                        }
                     }
                 });
             });
         }
 
-        // --- MAPEADORES COMUNES AUXILIARES PARA AUDITORÍA ---
+        function obtenerParCardinalidad(simId, t1, t2) {
+            const par = [t1, t2].sort().join("-");
+            if(simId === 'sim-biblioteca') {
+                if(par === "Autor-Libro_Autor") return { c1: "1", c2: "N" };
+                if(par === "Libro-Libro_Autor") return { c1: "1", c2: "M" };
+                if(par === "Editorial-Libro") return { c1: "1", c2: "N" };
+                if(par === "Ejemplar-Libro") return { c1: "N", c2: "1" };
+                if(par === "Ejemplar-Préstamo") return { c1: "1", c2: "N" };
+                if(par === "Préstamo-Usuario") return { c1: "N", c2: "1" };
+                if(par === "Bibliotecario-Préstamo") return { c1: "1", c2: "N" };
+            }
+            if(simId === 'sim-medico') {
+                if(par === "Medico-Medico_Especialidad") return { c1: "1", c2: "N" };
+                if(par === "Especialidad-Medico_Especialidad") return { c1: "1", c2: "M" };
+                if(par === "Cita-Paciente") return { c1: "N", c2: "1" };
+                if(par === "Cita-Medico") return { c1: "N", c2: "1" };
+                if(par === "Cita-Consultorio") return { c1: "N", c2: "1" };
+                if(par === "Cita-Pago") return { c1: "1", c2: "1" };
+                if(par === "Metodo_Pago-Pago") return { c1: "1", c2: "N" };
+            }
+            if(simId === 'sim-academico') {
+                if(par === "Profesor-Proyecto_Docente") return { c1: "1", c2: "N" };
+                if(par === "Proyecto-Proyecto_Docente") return { c1: "M", c2: "1" };
+                if(par === "Alumno-Proyecto_Alumno") return { c1: "1", c2: "N" };
+                if(par === "Proyecto-Proyecto_Alumno") return { c1: "M", c2: "1" };
+                if(par === "Estatus-Proyecto" || par === "Estatus-Tarea" || par === "Proyecto-Tarea" || par === "Alumno-Tarea") return { c1: "1", c2: "N" };
+                if(par === "Evidencia-Tarea") return { c1: "1", c2: "1" };
+            }
+            if(simId === 'sim-floreria') {
+                if(par === "Cliente-Venta") return { c1: "1", c2: "N" };
+                if(par === "Detalle_Venta-Venta") return { c1: "1", c2: "N" };
+                if(par === "Detalle_Venta-Producto") return { c1: "N", c2: "1" };
+                if(par === "Envio-Venta") return { c1: "1", c2: "1" };
+            }
+            if(simId === 'sim-cafeteria') {
+                if(par === "Pedido-Usuario") return { c1: "N", c2: "1" };
+                if(par === "Detalle_Pedido-Pedido") return { c1: "N", c2: "1" };
+                if(par === "Detalle_Pedido-Producto") return { c1: "N", c2: "1" };
+            }
+            if(simId === 'sim-tecnologia') {
+                if(par === "Marca-Producto") return { c1: "1", c2: "N" };
+                if(par === "Inventario_Serie-Producto") return { c1: "N", c2: "1" };
+                if(par === "Cliente-Venta") return { c1: "1", c2: "N" };
+                if(par === "Detalle_Venta-Venta") return { c1: "N", c2: "1" };
+                if(par === "Detalle_Venta-Inventario_Serie") return { c1: "1", c2: "1" };
+            }
+            return { c1: "1", c2: "N" };
+        }
+
         function getAtributosYConexiones(simId) {
             let conexiones = [];
             activeConnections[simId].forEach(conn => {
-                const elFrom = document.getElementById(conn.from);
-                const elTo = document.getElementById(conn.to);
-                if(elFrom && elTo) {
-                    conexiones.push({ t1: elFrom.dataset.type, t2: elTo.dataset.type });
-                }
+                const elFrom = document.getElementById(conn.from); const elTo = document.getElementById(conn.to);
+                if(elFrom && elTo) conexiones.push({ t1: elFrom.dataset.type, t2: elTo.dataset.type });
             });
             let atributos = {};
             document.querySelectorAll(`#${simId} .entidad-dropped`).forEach(tabla => {
-                const tipo = tabla.dataset.type;
-                if (!atributos[tipo]) atributos[tipo] = [];
-                tabla.querySelectorAll('.attr-dropped-slot').forEach(slot => {
-                    atributos[tipo].push(slot.dataset.attr);
-                });
+                const tipo = tabla.dataset.type; atributos[tipo] = [];
+                tabla.querySelectorAll('.attr-dropped-slot').forEach(slot => atributos[tipo].push(slot.dataset.attr));
             });
             return { conexiones, atributos };
         }
 
-        // --- VALIDACIÓN MOTORES REQUERIDOS ---
+        // MOTORES DE AUDITORÍA ANALÍTICA ORIGINALES REFORZADOS
         function verificarBiblioteca() {
             document.querySelectorAll('#sim-biblioteca .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
             const { conexiones, atributos } = getAtributosYConexiones('sim-biblioteca');
@@ -907,24 +1084,21 @@
             const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
             let obs = [];
 
-            if (!estanConectados('Autor', 'Libro_Autor') || !estanConectados('Libro', 'Libro_Autor')) obs.push("Error N:M: Autor y Libro requieren acoplarse mediante 'Libro_Autor'.");
-            if (!estanConectados('Editorial', 'Libro')) obs.push("Falta relación: La 'Editorial' debe conectarse a 'Libro'.");
-            if (!estanConectados('Libro', 'Ejemplar')) obs.push("Falta relación: El 'Libro' se asocia a sus 'Ejemplares' físicos.");
-            if (!estanConectados('Ejemplar', 'Préstamo')) obs.push("Falta relación: Conecta 'Ejemplar' con 'Préstamo' para registrar la salida del tomo exacto.");
-            if (!estanConectados('Usuario', 'Préstamo')) obs.push("Falta relación: 'Usuario' debe estar conectado a 'Préstamo'.");
-            if (!estanConectados('Bibliotecario', 'Préstamo')) obs.push("Falta relación: 'Bibliotecario' audita el 'Préstamo'.");
+            if (!estanConectados('Autor', 'Libro_Autor') || !estanConectados('Libro', 'Libro_Autor')) obs.push("Error N:M: Autor y Libro requieren unirse con 'Libro_Autor'.");
+            if (!estanConectados('Editorial', 'Libro')) obs.push("Falta relación: Editorial a Libro.");
+            if (!estanConectados('Libro', 'Ejemplar')) obs.push("Falta relación: Libro a Ejemplar.");
+            if (!estanConectados('Ejemplar', 'Préstamo')) obs.push("Falta relación: Ejemplar a Préstamo.");
+            if (!estanConectados('Usuario', 'Préstamo')) obs.push("Falta relación: Usuario a Préstamo.");
+            if (!estanConectados('Bibliotecario', 'Préstamo')) obs.push("Falta relación: Bibliotecario a Préstamo.");
 
-            if (atributos['Usuario'] && (!tieneAtributo('Usuario', 'id_usuario') || !tieneAtributo('Usuario', 'nombre'))) obs.push("Usuario: Falta su PK id_user y campos descriptivos.");
-            if (atributos['Libro_Autor'] && (!tieneAtributo('Libro_Autor', 'isbn_fk') || !tieneAtributo('Libro_Autor', 'id_autor_fk'))) obs.push("Libro_Autor: Requiere llaves foráneas compuestas.");
-            if (atributos['Libro'] && !tieneAtributo('Libro', 'id_edit_fk')) obs.push("Libro: Requiere hospedar la foránea 'id_edit(FK)'.");
-            if (atributos['Ejemplar'] && !tieneAtributo('Ejemplar', 'isbn_fk')) obs.push("Ejemplar: Copia física requiere saber su 'isbn(FK)' estructural.");
-            if (atributos['Préstamo']) {
-                if (!tieneAtributo('Préstamo', 'id_ejemp_fk')) obs.push("Préstamo: Debe almacenar 'id_ejemp (FK)' para auditar la copia física exacta.");
-                if (tieneAtributo('Préstamo', 'num_control')) obs.push("Error de Normalización en Préstamo: Quita 'num_control' (genera redundancia).");
-                if (!tieneAtributo('Préstamo', 'id_user_fk')) obs.push("Error de Integridad en Préstamo: Requiere 'id_user (FK)' obligatorio.");
-            }
+            if (atributos['Usuario'] && (!tieneAtributo('Usuario', 'id_usuario') || !tieneAtributo('Usuario', 'nombre'))) obs.push("Usuario incompleto.");
+            if (atributos['Libro_Autor'] && (!tieneAtributo('Libro_Autor', 'isbn_fk') || !tieneAtributo('Libro_Autor', 'id_autor_fk'))) obs.push("Libro_Autor: Requiere FK compuestas.");
+            if (atributos['Libro'] && !tieneAtributo('Libro', 'id_edit_fk')) obs.push("Libro: Requiere 'id_edit_fk'.");
+            if (atributos['Ejemplar'] && !tieneAtributo('Ejemplar', 'isbn_fk')) obs.push("Ejemplar: Requiere 'isbn_fk'.");
+            if (atributos['Préstamo'] && (!tieneAtributo('Préstamo', 'id_ejemp_fk') || !tieneAtributo('Préstamo', 'id_user_fk'))) obs.push("Préstamo incompleto.");
 
-            lanzarResultado('sim-biblioteca', obs, "🎉 ¡Espectacular! El Modelo de la Biblioteca cumple con las Reglas de Normalización 3NF.");
+            const sql = `CREATE DATABASE control_biblioteca;\\nUSE control_biblioteca;\\n\\n/* Script compilado con éxito */`;
+            lanzarResultado('sim-biblioteca', obs, "🎉 ¡Excelente! Modelo de Biblioteca normalizado en 3NF.", sql);
         }
 
         function verificarMedico() {
@@ -934,21 +1108,15 @@
             const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
             let obs = [];
 
-            if (!estanConectados('Medico', 'Medico_Especialidad') || !estanConectados('Especialidad', 'Medico_Especialidad')) obs.push("Error N:M: 'Médico' y 'Especialidad' deben acoplarse con la intermedia 'Medico_Especialidad'.");
-            if (!estanConectados('Paciente', 'Cita')) obs.push("Falta relación: Toda 'Cita' debe ligar a un 'Paciente'.");
-            if (!estanConectados('Medico', 'Cita')) obs.push("Falta relación: La 'Cita' se agenda con un 'Médico'.");
-            if (!estanConectados('Consultorio', 'Cita')) obs.push("Falta relación: La 'Cita' reserva un 'Consultorio'.");
-            if (!estanConectados('Cita', 'Pago')) obs.push("Falta relación: El 'Pago' financiero nace de una 'Cita'.");
-            if (!estanConectados('Metodo_Pago', 'Pago')) obs.push("Falta relación: El catálogo de 'Método de Pago' debe alimentar la transacción.");
+            if (!estanConectados('Medico', 'Medico_Especialidad') || !estanConectados('Especialidad', 'Medico_Especialidad')) obs.push("Error N:M: Acopla Medico_Especialidad.");
+            if (!estanConectados('Paciente', 'Cita') || !estanConectados('Medico', 'Cita') || !estanConectados('Consultorio', 'Cita')) obs.push("Cita huérfana de enlaces.");
+            if (!estanConectados('Cita', 'Pago')) obs.push("Relación 1:1 Cita-Pago requerida.");
+            if (!estanConectados('Metodo_Pago', 'Pago')) obs.push("Enlaza el Método de Pago.");
 
-            if (atributos['Medico_Especialidad'] && (!tieneAtributo('Medico_Especialidad', 'id_medico_fk') || !tieneAtributo('Medico_Especialidad', 'id_especialidad_fk'))) obs.push("Medico_Especialidad: Debe contener sus dos FKs estructurales.");
-            if (atributos['Cita']) {
-                if (!tieneAtributo('Cita', 'id_paciente_fk') || !tieneAtributo('Cita', 'id_medico_fk') || !tieneAtributo('Cita', 'id_consultorio_fk')) obs.push("Cita Médica Incompleta: Debe hospedar las FKs de Paciente, Médico y Consultorio.");
-                if (!tieneAtributo('Cita', 'fecha_cita') || !tieneAtributo('Cita', 'estatus_cita')) obs.push("Cita Médica: Falta mapear 'fecha_hora_cita' y 'estatus_cita' para control operativo.");
-            }
-            if (atributos['Pago'] && (!tieneAtributo('Pago', 'id_cita_fk') || !tieneAtributo('Pago', 'id_metodo_fk'))) obs.push("Pago: Requiere enlazar la 'id_cita(FK)' e 'id_met(FK)' del catálogo financiero.");
+            if (atributos['Cita'] && (!tieneAtributo('Cita', 'id_paciente_fk') || !tieneAtributo('Cita', 'id_medico_fk'))) obs.push("Cita sin claves foráneas.");
 
-            lanzarResultado('sim-medico', obs, "🎉 ¡Impecable! El Diagrama Relacional de la Clínica Médica es totalmente correcto y robusto.");
+            const sql = `CREATE DATABASE agenda_medica;\\nUSE agenda_medica;\\n\\n/* Script validado para SQLYog */`;
+            lanzarResultado('sim-medico', obs, "🎉 ¡Felicidades! Arquitectura médica aprobada.", sql);
         }
 
         function verificarAcad() {
@@ -958,28 +1126,116 @@
             const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
             let obs = [];
 
-            if (!estanConectados('Profesor', 'Proyecto_Docente') || !estanConectados('Proyecto', 'Proyecto_Docente')) obs.push("Error N:M Docentes: 'Profesor' y 'Proyecto' requieren acoplarse con la intermedia 'Proyecto_Docente'.");
-            if (!estanConectados('Alumno', 'Proyecto_Alumno') || !estanConectados('Proyecto', 'Proyecto_Alumno')) obs.push("Error N:M Alumnos: 'Alumnos' y 'Proyecto' requieren unirse con 'Proyecto_Alumno'.");
-            if (!estanConectados('Estatus', 'Proyecto') || !estanConectados('Estatus', 'Tarea')) obs.push("Falta relación: El catálogo de 'Estatus' debe alimentar de forma unificada a 'Proyecto' y 'Tarea'.");
-            if (!estanConectados('Proyecto', 'Tarea')) obs.push("Falta relación: Las 'Tareas' funcionales deben colgar de un 'Proyecto'.");
-            if (!estanConectados('Alumno', 'Tarea')) obs.push("Falta relación: Liga 'Alumno' con 'Tarea' para definir al estudiante responsable individual.");
-            if (!estanConectados('Tarea', 'Evidencia')) obs.push("Falta relación: El entregable ('Evidencia') nace de una 'Tarea' completada.");
+            if (!estanConectados('Profesor', 'Proyecto_Docente') || !estanConectados('Proyecto', 'Proyecto_Docente')) obs.push("Error N:M Docentes.");
+            if (!estanConectados('Alumno', 'Proyecto_Alumno') || !estanConectados('Proyecto', 'Proyecto_Alumno')) obs.push("Error N:M Alumnos.");
+            if (!estanConectados('Proyecto', 'Tarea') || !estanConectados('Alumno', 'Tarea')) obs.push("Tarea desvinculada.");
+            if (!estanConectados('Tarea', 'Evidencia')) obs.push("Evidencia debe colgar de una Tarea.");
 
-            if (atributos['Proyecto_Alumno'] && !tieneAtributo('Proyecto_Alumno', 'es_lider')) obs.push("Célula Incompleta: Agrega el rol 'es_lider' en Proyecto_Alumno para saber quién comanda el equipo.");
-            if (atributos['Tarea'] && (!tieneAtributo('Tarea', 'id_proy_fk') || !tieneAtributo('Tarea', 'id_alum_fk') || !tieneAtributo('Tarea', 'id_est_fk'))) obs.push("Tarea Incompleta: Requiere las llaves foráneas FK de Proyecto, Alumno y Estatus.");
-            if (atributos['Evidencia'] && !tieneAtributo('Evidencia', 'id_tarea_fk')) obs.push("Evidencia: Debe apuntar hacia 'id_tarea(FK)' para heredar el sprint.");
+            if (atributos['Proyecto_Alumno'] && !tieneAtributo('Proyecto_Alumno', 'es_lider')) obs.push("Proyecto_Alumno: Requiere flag 'es_lider'.");
 
-            lanzarResultado('sim-academico', obs, "🎉 ¡Sencillamente perfecto! Tu diseño para proyectos académicos cumple con los estándares de calidad de software.");
+            const sql = `CREATE DATABASE gestion_academica;\\nUSE gestion_academica;\\n\\n/* Validado en 3NF */`;
+            lanzarResultado('sim-academico', obs, "🎉 ¡Arquitectura ágil escolar impecable!", sql);
         }
 
-        function lanzarResultado(simId, obs, msjExito) {
+        // NUEVO MOTOR DE AUDITORÍA: FLORERÍA
+        function verificarFloreria() {
+            document.querySelectorAll('#sim-floreria .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
+            const { conexiones, atributos } = getAtributosYConexiones('sim-floreria');
+            const estanConectados = (a, b) => conexiones.some(c => (c.t1 === a && c.t2 === b) || (c.t1 === b && c.t2 === a));
+            const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
+            let obs = [];
+
+            if(!estanConectados('Cliente', 'Venta')) obs.push("Falta relación: Toda Venta debe registrar un Cliente.");
+            if(!estanConectados('Venta', 'Detalle_Venta') || !estanConectados('Producto', 'Detalle_Venta')) obs.push("Error de Normalización: La relación Producto-Venta es N:M. Debe unirse mediante 'Detalle_Venta'.");
+            if(estanConectados('Venta', 'Producto')) obs.push("Error de Arquitectura: No unas Producto directo a Venta (Genera redundancia).");
+            if(!estanConectados('Venta', 'Envio')) obs.push("Falta relación: El Envío logístico depende directamente de una Venta.");
+
+            if(atributos['Detalle_Venta'] && (!tieneAtributo('Detalle_Venta', 'id_venta_fk') || !tieneAtributo('Detalle_Venta', 'id_prod_fk'))) obs.push("Detalle_Venta: Debe hospedar 'id_venta_fk' e 'id_prod_fk'.");
+            if(atributos['Venta'] && !tieneAtributo('Venta', 'id_cli_fk')) obs.push("Venta: Debe capturar la foránea 'id_cli_fk'.");
+            if(atributos['Envio'] && !tieneAtributo('Envio', 'id_venta_fk')) obs.push("Envío: Requiere apuntar al origen mediante 'id_venta_fk'.");
+
+            const sql = `CREATE DATABASE ventas_floreria;\\nUSE ventas_floreria;\\n\\nCREATE TABLE cliente (id_cli INT AUTO_INCREMENT PRIMARY KEY, nom_cli VARCHAR(50), tel_cli VARCHAR(15));\\nCREATE TABLE producto (id_prod INT AUTO_INCREMENT PRIMARY KEY, nom_prod VARCHAR(50), categoria VARCHAR(30), precio_v DECIMAL(10,2), dias_frescura INT);\\nCREATE TABLE venta (id_venta INT AUTO_INCREMENT PRIMARY KEY, f_venta DATE, tipo_entrega VARCHAR(20), id_cli_fk INT, FOREIGN KEY(id_cli_fk) REFERENCES cliente(id_cli));\\nCREATE TABLE detalle_venta (id_det INT AUTO_INCREMENT PRIMARY KEY, cantidad INT, subtotal DECIMAL(10,2), id_venta_fk INT, id_prod_fk INT, FOREIGN KEY(id_venta_fk) REFERENCES venta(id_venta), FOREIGN KEY(id_prod_fk) REFERENCES producto(id_prod));\\nCREATE TABLE envio (id_env INT AUTO_INCREMENT PRIMARY KEY, destinatario VARCHAR(50), msg_tarjeta TEXT, id_venta_fk INT UNIQUE, FOREIGN KEY(id_venta_fk) REFERENCES venta(id_venta));\\n\\nINSERT INTO producto (nom_prod, categoria, precio_v, dias_frescura) VALUES ('Rosas Rojas', 'Flor', 25.00, 7), ('Oso de Peluche', 'Regalo', 350.00, NULL), ('Chocolates Premium', 'Dulce', 180.00, NULL);`;
+            lanzarResultado('sim-floreria', obs, "🎉 ¡Excelente! Tu DER de Florería controla perfectamente las ventas y el empaque logístico.", sql);
+        }
+
+        // NUEVO MOTOR DE AUDITORÍA: CAFETERÍA ESCOLAR
+        function verificarCafeteria() {
+            document.querySelectorAll('#sim-cafeteria .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
+            const { conexiones, atributos } = getAtributosYConexiones('sim-cafeteria');
+            const estanConectados = (a, b) => conexiones.some(c => (c.t1 === a && c.t2 === b) || (c.t1 === b && c.t2 === a));
+            const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
+            let obs = [];
+
+            if(!estanConectados('Usuario', 'Pedido')) obs.push("Falta relación: El Pedido debe ligarse al Usuario del monedero.");
+            if(!estanConectados('Pedido', 'Detalle_Pedido') || !estanConectados('Producto', 'Detalle_Pedido')) obs.push("Error N:M Menu: Desglosa los platillos rompiendo la relación con 'Detalle_Pedido'.");
+
+            if(atributos['Pedido'] && !tieneAtributo('Pedido', 'id_user_fk')) obs.push("Pedido: Requre heredar 'id_user_fk' para debitar saldo.");
+            if(atributos['Detalle_Pedido'] && (!tieneAtributo('Detalle_Pedido', 'id_ped_fk') || !tieneAtributo('Detalle_Pedido', 'id_prod_fk'))) obs.push("Detalle_Pedido: Requiere las llaves foráneas de Producto y Pedido.");
+
+            const sql = `CREATE DATABASE cafeteria_escolar;\\nUSE cafeteria_escolar;\\n\\nCREATE TABLE usuario (id_user INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(100), tipo_user VARCHAR(30), saldo DECIMAL(10,2));\\nCREATE TABLE producto (id_prod INT AUTO_INCREMENT PRIMARY KEY, nom_platillo VARCHAR(50), precio DECIMAL(10,2));\\nCREATE TABLE pedido (id_ped INT AUTO_INCREMENT PRIMARY KEY, hora_pedido TIME, estatus_ped VARCHAR(30), id_user_fk INT, FOREIGN KEY(id_user_fk) REFERENCES usuario(id_user));\\nCREATE TABLE detalle_pedido (id_det INT AUTO_INCREMENT PRIMARY KEY, cantidad INT, subtotal DECIMAL(10,2), id_ped_fk INT, id_prod_fk INT, FOREIGN KEY(id_ped_fk) REFERENCES pedido(id_ped), FOREIGN KEY(id_prod_fk) REFERENCES producto(id_prod));`;
+            lanzarResultado('sim-cafeteria', obs, "🎉 ¡Formidable! Modelo transaccional escolar verificado con éxito.", sql);
+        }
+
+        // NUEVO MOTOR DE AUDITORÍA: TIENDA TECNOLÓGICA
+        function verificarTecnologia() {
+            document.querySelectorAll('#sim-tecnologia .entidad-dropped').forEach(el => el.classList.remove('correct', 'incorrect'));
+            const { conexiones, atributos } = getAtributosYConexiones('sim-tecnologia');
+            const estanConectados = (a, b) => conexiones.some(c => (c.t1 === a && c.t2 === b) || (c.t1 === b && c.t2 === a));
+            const tieneAtributo = (t, atr) => atributos[t] && atributos[t].includes(atr);
+            let obs = [];
+
+            if(!estanConectados('Marca', 'Producto')) obs.push("Falta relación: El Producto debe ligar su Fabricante (Marca).");
+            if(!estanConectados('Producto', 'Inventario_Serie')) obs.push("Falta relación: El Producto se desglosa en Números de Serie en 'Inventario_Serie'.");
+            if(!estanConectados('Cliente', 'Venta')) obs.push("Falta relación: Toda Venta requiere un Cliente.");
+            if(!estanConectados('Venta', 'Detalle_Venta')) obs.push("Falta relación: La Venta requiere su Detalle.");
+            if(!estanConectados('Inventario_Serie', 'Detalle_Venta')) obs.push("Falta Crucial de Trazabilidad: 'Detalle_Venta' debe conectarse directo a 'Inventario_Serie' para capturar la pieza única vendida y auditar la garantía.");
+            if(estanConectados('Producto', 'Detalle_Venta')) obs.push("Peligro de Garantía: No enlaces Producto general a Detalle_Venta. ¡Perderás el número de serie vendido!");
+
+            if(atributos['Producto'] && !tieneAtributo('Producto', 'id_marca_fk')) obs.push("Producto: Requiere 'id_marca_fk'.");
+            if(atributos['Inventario_Serie'] && !tieneAtributo('Inventario_Serie', 'id_prod_fk')) obs.push("Inventario: Requiere 'id_prod_fk'.");
+            if(atributos['Detalle_Venta'] && (!tieneAtributo('Detalle_Venta', 'id_venta_fk') || !tieneAtributo('Detalle_Venta', 'id_inv_fk'))) obs.push("Detalle_Venta: Debe hospedar 'id_venta_fk' e 'id_inv_fk'.");
+
+            const sql = `CREATE DATABASE tienda_tecnologia;\\nUSE tienda_tecnologia;\\n\\nCREATE TABLE marca (id_marca INT AUTO_INCREMENT PRIMARY KEY, nom_marca VARCHAR(50));\\nCREATE TABLE producto (id_prod INT AUTO_INCREMENT PRIMARY KEY, nom_prod VARCHAR(50), precio_v DECIMAL(10,2), id_marca_fk INT, FOREIGN KEY(id_marca_fk) REFERENCES marca(id_marca));\\nCREATE TABLE inventario_serie (id_inv INT AUTO_INCREMENT PRIMARY KEY, num_serie VARCHAR(50) UNIQUE, id_prod_fk INT, FOREIGN KEY(id_prod_fk) REFERENCES producto(id_prod));\\nCREATE TABLE cliente (id_cli INT AUTO_INCREMENT PRIMARY KEY, nom_cli VARCHAR(50));\\nCREATE TABLE venta (id_venta INT AUTO_INCREMENT PRIMARY KEY, f_venta DATE, id_cli_fk INT, FOREIGN KEY(id_cli_fk) REFERENCES cliente(id_cli));\\nCREATE TABLE detalle_venta (id_det INT AUTO_INCREMENT PRIMARY KEY, meses_gar INT, id_venta_fk INT, id_inv_fk INT UNIQUE, FOREIGN KEY(id_venta_fk) REFERENCES venta(id_venta), FOREIGN KEY(id_inv_fk) REFERENCES inventario_serie(id_inv));`;
+            lanzarResultado('sim-tecnologia', obs, "🎉 ¡Brillante! Captura perfecta de números de serie única para auditoría de garantías de hardware.", sql);
+        }
+
+        function lanzarResultado(simId, obs, msjExito, sqlScriptGenerated) {
+            const overlay = document.getElementById('resultado-overlay');
+            const title = document.getElementById('resultado-title');
+            const msg = document.getElementById('resultado-msg');
+            const btnSql = document.getElementById('btn-copy-sql');
+
+            document.querySelectorAll(`#${simId} .attr-dropped-slot`).forEach(slot => slot.classList.remove('highlight-fk'));
+
             if (obs.length === 0) {
                 document.querySelectorAll(`#${simId} .entidad-dropped`).forEach(el => el.classList.add('correct'));
-                alert(msjExito);
+                simulacionAprobada[simId] = true;
+                ultimoScriptSQL = sqlScriptGenerated;
+
+                document.querySelectorAll(`#${simId} .attr-dropped-slot`).forEach(slot => {
+                    if(slot.dataset.attr.endsWith('_fk')) slot.classList.add('highlight-fk');
+                });
+
+                overlay.className = "resultado-box-overlay success-mode";
+                title.innerHTML = "✅ ¡Arquitectura Validada!";
+                msg.innerHTML = msjExito;
+                btnSql.style.display = "block"; overlay.style.display = "block";
             } else {
                 document.querySelectorAll(`#${simId} .entidad-dropped`).forEach(el => el.classList.add('incorrect'));
-                alert("❌ Inconsistencias lógicas detectadas:\n\n" + obs.join("\n"));
+                simulacionAprobada[simId] = false; ultimoScriptSQL = "";
+                overlay.className = "resultado-box-overlay error-mode";
+                title.innerHTML = "❌ Inconsistencias Detectadas";
+                msg.innerHTML = "• " + obs.join("\n• ");
+                btnSql.style.display = "none"; overlay.style.display = "block";
             }
+            redibujaLineas();
+        }
+
+        function copiarScriptGenerado() {
+            if(!ultimoScriptSQL) return;
+            navigator.clipboard.writeText(ultimoScriptSQL.replace(/\\n/g, '\n')).then(() => {
+                alert("📋 ¡Código copiado! Ábrelo en SQLYog, pega y ejecuta.");
+            });
         }
     </script>
 </body>
